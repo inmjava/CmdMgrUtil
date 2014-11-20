@@ -1,12 +1,19 @@
 package com.copel.javaprocedurecmd;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
 import com.copel.cmdutil.ResultSet;
 
-@SuppressWarnings({"rawtypes", "unchecked"})
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class JavaProcedureCmdMgr extends CmdMgrBase {
+
+	private static final String PATH = null;
 
 	public void addAddreessMultipleUsers(String sUserGroup, String sWebAddress) {
 
@@ -194,8 +201,8 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 		}
 
 	}
-	
-	public void listMembersForUserGroupEveryone(){
+
+	public void listMembersForUserGroupEveryone() {
 		// Recebe o resultado da consulta
 		ResultSet loginUsuarioRS = executeCapture("LIST MEMBERS FOR USER GROUP \"Everyone\";");
 		loginUsuarioRS.moveFirst();
@@ -209,7 +216,7 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 			loginUsuarioRS.moveFirst();
 			while (!loginUsuarioRS.isEof()) {
 
-				if(loginUsuarioRS.getFieldValueString(IS_GROUP).equals("false")){
+				if (loginUsuarioRS.getFieldValueString(IS_GROUP).equals("false")) {
 					// INÍCIO - Implementação sobre o resultset loginUsuarioRS
 					printOut(loginUsuarioRS.getFieldValueString(LOGIN));
 					// FIM - Implementação sobre o resultset loginUsuarioRS
@@ -221,10 +228,11 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 			}
 		}
 	}
-	
-	public void excluirProjetoPadraoCopel(String nomeProjeto){
+
+	public void excluirProjetoPadraoCopel(String nomeProjeto) {
 		// String nomeProjeto = "ING - Gestão de Indicadores";
-		// String descricaoProjeto = "Aplicativo BI para análise e acompanhamento dos indicadores estratégicos da Copel";
+		// String descricaoProjeto =
+		// "Aplicativo BI para análise e acompanhamento dos indicadores estratégicos da Copel";
 		String siglaNomeProjeto = nomeProjeto.substring(0, 3);
 
 		// Delete everything
@@ -238,37 +246,214 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 		execute("DELETE USER GROUP \"" + siglaNomeProjeto + "-MBL\";");
 		execute("DELETE USER GROUP \"" + siglaNomeProjeto + "-WEB\";");
 	}
-	
-	public void testeTemplate(){
+
+	public void navegarDiretoriosProjetos() {
+
+		String dir = "\\\\Public Objects\\Reports";
+		String projeto = "AIN - Analise de Interrupcoes";
+		
 		// Recebe o resultado da consulta
-		ResultSet pastasRS = executeCapture("consulta");
-		pastasRS.moveFirst();
-		pastasRS = (ResultSet) pastasRS.getFieldValue(MEMBER_RESULTSET);
-		pastasRS.getRowCount();
-
+		ResultSet listaDirRS = (ResultSet) executeCapture("LIST ALL FOLDERS IN \"" + dir + "\" FOR PROJECT \"" + projeto + "\";");
+		
 		// Verifica se existe algum resultado
-		if (pastasRS.getRowCount() > 0) {
-
-			// Anda pelo primeiro elemento do ResultSet pastasRS
-			pastasRS.moveFirst();
-			while (!pastasRS.isEof()) {
-
-				if (pastasRS.getFieldValueString(IS_GROUP).equals("false")) {
-					// INÍCIO - Implementação sobre o resultset pastasRS
-					printOut(pastasRS.getFieldValueString(NAME));
-					// FIM - Implementação sobre o resultset pastasRS
-				}
-
+		if (listaDirRS.getRowCount() > 0) {
+		
+			// Anda pelo primeiro elemento do ResultSet listaDirRS
+			listaDirRS.moveFirst();
+			while (!listaDirRS.isEof()) {
+		
+				// INÍCIO - Implementação sobre o resultset listaDirRS
+				String newDir = dir + "\\" + listaDirRS.getFieldValueString(NAME);
+				printOut(newDir);
+				// FIM - Implementação sobre o resultset listaDirRS
+		
 				// Da continuidade a iteração com o ResultSet
-				// pastasRS
-				pastasRS.moveNext();
+				// listaDirRS
+				listaDirRS.moveNext();
 			}
 		}
 	}
-	
-	public void navegarRecursivo(String navegarRecursivo){
-		
-		
+
+	public void recursivelyListFolders(String navegarRecursivo) {
+
+		String sTopFolder = "\\\\Public Objects\\Reports";
+		String sProject = "AIN - Analise de Interrupcoes";
+
+		printOut("Displaying recursively folders for " + sTopFolder);
+		// Retrieve the initial folder list under the specified top folder
+		ResultSet oResultSet = executeCapture("LIST ALL FOLDERS IN \"" + sTopFolder + "\" FOR PROJECT \"" + sProject + "\";");
+		oResultSet.moveFirst();
+		// Initialize a Cache for folders.
+		List<ResultSet> oResultSetCache = new ArrayList<ResultSet>();
+		oResultSetCache.add(oResultSet);
+
+		// Loop until there is no more folder list cached.
+		ProcessNextFolderLabel: while (oResultSetCache.size() > 0) {
+			oResultSet = (ResultSet) oResultSetCache.get(oResultSetCache.size() - 1);
+			// The ResultSet always picks up at its last pointed element
+			while (!oResultSet.isEof()) {
+				// Retrieve the next Folder in the list
+				String sTraversedFolder = oResultSet.getFieldValueString(NAME);
+				String path = oResultSet.getFieldValueString(PATH);
+				sTraversedFolder = path + sTraversedFolder;
+				printOut("traversing " + sTraversedFolder);
+
+				oResultSet.moveNext();
+
+				// Query the subfolders.
+				ResultSet oResultSet2 = executeCapture("LIST ALL FOLDERS IN \"" + sTraversedFolder + "\" FOR PROJECT \"" + sProject + "\";");
+				if (oResultSet2.getRowCount() > 0) {
+					// There are more subfolders. Add it to the list and process
+					// it.
+					oResultSet2.moveFirst();
+					oResultSetCache.add(oResultSet2);
+					// The subfolder processing starts in the outer loop
+					continue ProcessNextFolderLabel;
+				}
+			}
+
+			// That was the last element at this level. Remove it from the
+			// cache.
+			oResultSetCache.remove(oResultSetCache.size() - 1);
+		}
+		printOut("Done");
+	}
+
+	public void printRemoveAllACEFromFolder() {
+		String sFolderName = "";
+		String sFolderPath = "";
+		String sProject = "";
+		// list acl for the folder
+		ResultSet oResultSet = executeCapture("LIST ALL PROPERTIES FOR ACL FROM FOLDER '" + sFolderName + "' IN FOLDER '" + sFolderPath + "' FOR PROJECT '" + sProject + "';");
+		String sUserName = null;
+		if (oResultSet.getRowCount() > 0) {
+			oResultSet.moveFirst();
+			// Go through each ACE and delete them one by one
+			while (!oResultSet.isEof()) {
+				sUserName = (String) oResultSet.getFieldValue(DisplayPropertyEnum.TRUSTEE_NAME);
+				if (sUserName != null) {
+					if (sUserName.indexOf("(") > 0 && sUserName.indexOf(")") > 0) {
+						// sometimes, the username is enclosed by (), need to
+						// remove ()
+						sUserName = sUserName.substring(sUserName.indexOf("(") + 1, sUserName.indexOf(")")).trim();
+						printOut("REMOVE ACE FROM FOLDER '" + sFolderName + "' IN FOLDER '" + sFolderPath + "' USER '" + sUserName + "' FOR PROJECT '" + sProject + "';");
+					} else {
+						printOut("REMOVE ACE FROM FOLDER '" + sFolderName + "' IN FOLDER '" + sFolderPath + "' GROUP '" + sUserName + "' FOR PROJECT '" + sProject + "';");
+					}
+				}
+				oResultSet.moveNext();
+			}
+			printOut("All ACE for folder '" + sFolderName + "' under '" + sFolderPath + "' folder from '" + sProject + "' project has been removed successfully.");
+		} else {
+			printOut("No ACE exists for the specified folder.");
+		}
 	}
 	
+	public void addAceOnFolder(){
+
+		int numOfDays = 1;
+		String folderName = "";
+		String projectName = "";
+		String userName = "";
+		
+		printOut("starting execution...");
+		//to get creation time that is numOfDays before today
+		Calendar oTime = Calendar.getInstance();
+		
+		oTime.set(Calendar.DAY_OF_MONTH, oTime.get(Calendar.DAY_OF_MONTH) - numOfDays);
+
+		
+		// Retrieve the initial folder list under the specified top folder
+		String sQuery = "LIST ALL FOLDERS IN \"" + folderName + "\" FOR PROJECT \"" + projectName + "\";";
+		ResultSet oFolders = executeCapture(sQuery);
+
+		// Initialize a Cache for folders.
+		Vector<ResultSet> oResultSetCache = new Vector<ResultSet>();
+		oResultSetCache.add(oFolders);
+
+		// Get all reports under the initial folder
+		sQuery = "LIST ALL REPORTS IN FOLDER \"" + folderName + "\" FOR PROJECT '" + projectName + "';";
+		ResultSet oReports = executeCapture(sQuery);
+		oReports.moveFirst();
+		while(!oReports.isEof()){    
+			String sReportName = oReports.getFieldValueString(DisplayPropertyEnum.NAME); 
+			sQuery = "LIST ALL PROPERTIES FOR REPORT \"" + sReportName + "\" IN FOLDER \"" + folderName + "\" FOR PROJECT \"" + projectName + "\";";
+			ResultSet reportProperties = executeCapture(sQuery);
+			reportProperties.moveFirst();
+			Date reportDate = (Date) reportProperties.getFieldValue(DisplayPropertyEnum.CREATION_TIME);
+			if(reportDate != null && reportDate.after(oTime.getTime())){
+				/** doing ACE work here for reports in the initial folder **/
+				sQuery = "ADD ACE FOR REPORT \"" + sReportName + "\" IN FOLDER \"" + folderName + "\" USER \"" + userName + "\" ACCESSRIGHTS FULLCONTROL FOR PROJECT \"" + projectName + "\";";
+				execute(sQuery);
+				printOut("add '" + userName + "' ace successfully for report '" + sReportName + "' in '" + folderName + "'");
+				/** ending of ACE work for reports in the initial folder **/ 
+			}
+			oReports.moveNext();
+		}
+
+		// process all subfolders and reports in the subfolders recursively
+		while (oResultSetCache.size() > 0){
+			ResultSet oChildFolders = (ResultSet)oResultSetCache.lastElement();
+			oResultSetCache.remove(oResultSetCache.size() - 1);
+			oChildFolders.moveFirst();
+			while (!oChildFolders.isEof()){
+				// Retrieve the next Folder in the list  
+				String sPath = oChildFolders.getFieldValue(DisplayPropertyEnum.PATH).toString();
+				String sFolderName = oChildFolders.getFieldValue(DisplayPropertyEnum.NAME).toString();
+				folderName = sPath + sFolderName;
+				oChildFolders.moveNext();
+
+				// Get all reports under this folder
+				sQuery = "LIST ALL REPORTS IN FOLDER \"" + folderName + "\" FOR PROJECT \"" + projectName + "\";";
+				oReports = executeCapture(sQuery);
+				oReports.moveFirst();  
+				while(!oReports.isEof()){    
+					String sReportName = oReports.getFieldValueString(DisplayPropertyEnum.NAME);
+					sQuery = "LIST ALL PROPERTIES FOR REPORT \"" + sReportName
+						+ "\" IN FOLDER \"" + folderName + "\" FOR PROJECT \"" + projectName + "\";";
+					ResultSet reportProperties = executeCapture(sQuery);
+					reportProperties.moveFirst();
+
+					//process the reports that are created after the certain time
+					Date reportCreateTime = (Date) reportProperties.getFieldValue(DisplayPropertyEnum.CREATION_TIME);
+					if(reportCreateTime != null && reportCreateTime.after(oTime.getTime())){
+						/** do ACE action here for reports in the current folder **/
+						sQuery = "ADD ACE FOR REPORT \"" + sReportName + "\" IN FOLDER \"" + folderName + "\" USER \"" + userName
+							+ "\" ACCESSRIGHTS FULLCONTROL FOR PROJECT \"" + projectName + "\";";
+						execute(sQuery);
+						printOut("add '" + userName + "' ace successfully for report '" + sReportName + "' in '" + folderName + "'");
+						/** ending of ACE action for reports in the current folder **/
+					}
+
+					oReports.moveNext();
+				}
+
+				sQuery = "LIST ALL PROPERTIES FOR FOLDER \"" + sFolderName + "\" IN \"" + sPath + "\" FOR PROJECT \"" + projectName + "\";";
+				ResultSet folderProperties = executeCapture(sQuery);
+				folderProperties.moveFirst();
+
+				//process the folders that are created after the certain time
+				Date folderCreateTime = (Date) folderProperties.getFieldValue(DisplayPropertyEnum.CREATION_TIME);
+				if(folderCreateTime != null && folderCreateTime.after(oTime.getTime())){
+					/** do ACE action here for the current folder **/ 
+					sQuery = "ADD ACE FOR FOLDER \"" + sFolderName + "\" IN FOLDER \"" + sPath + "\" USER \"" + userName
+						+ "\" ACCESSRIGHTS FULLCONTROL CHILDRENACCESSRIGHTS MODIFY FOR PROJECT \"" + projectName + "\";";
+					execute(sQuery);
+					printOut("add '" + userName + "' ace successfully for folder '" + folderName + "'");
+					/*** ending of ace action on the current folder **/
+				}
+
+				// get the subfolders in the current folder
+				sQuery = "LIST ALL FOLDERS IN \"" + folderName + "\" FOR PROJECT \"" + projectName + "\";";
+				ResultSet oChildSubFolders = executeCapture(sQuery);
+
+				if (oChildSubFolders.getRowCount() > 0){  
+					oResultSetCache.add(oChildSubFolders);
+				}
+			}    
+		}
+
+		printOut("Done.");
+	}
+
 }

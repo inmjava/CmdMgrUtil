@@ -12,7 +12,7 @@ public class ResultSet {
 		return false;
 	}
 
-	public ResultSet getFieldValue(String memberResultset) {
+	public Object getFieldValue(String memberResultset) {
 		// TODO Auto-generated method stub
 		return null;
 	}
