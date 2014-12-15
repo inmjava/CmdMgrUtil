@@ -455,5 +455,76 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 
 		printOut("Done.");
 	}
+	
+	public void listAllProjects(){
+		// Recebe o resultado da consulta
+		ResultSet projectsRS = (ResultSet) executeCapture("LIST ALL PROJECTS");
+
+		// Verifica se existe algum resultado
+		if (projectsRS.getRowCount() > 0) {
+
+			// Anda pelo primeiro elemento do ResultSet projectsRS
+			projectsRS.moveFirst();
+			while (!projectsRS.isEof()) {
+
+				// INÍCIO - Implementação sobre o resultset projectsRS
+				printOut(projectsRS.getFieldValueString(NAME));
+				// FIM - Implementação sobre o resultset projectsRS
+
+				// Da continuidade a iteração com o ResultSet
+				// projectsRS
+				projectsRS.moveNext();
+			}
+		}
+	}
+	
+	public void recursivelyNavigateGroups(){
+		
+		String topGroup = "PROJ";
+		
+		// Retrieve the initial folder list under the specified top folder
+		ResultSet oResultSet = executeCapture("LIST MEMBERS FOR USER GROUP \"" + topGroup + "\";");
+		oResultSet.moveFirst();
+		oResultSet = (ResultSet) oResultSet.getFieldValue(MEMBER_RESULTSET);
+		oResultSet.moveFirst();
+		
+		// Initialize a Cache for folders.
+		List<ResultSet> oResultSetCache = new ArrayList<ResultSet>();
+		oResultSetCache.add(oResultSet);
+		
+		// Loop until there is no more folder list cached.
+		ProcessNextFolderLabel: while (oResultSetCache.size() > 0){
+			oResultSet = (ResultSet)oResultSetCache.get(oResultSetCache.size()-1);
+			// The ResultSet always picks up at its last pointed element
+			while (!oResultSet.isEof()){
+				
+				if(!(Boolean)oResultSet.getFieldValue(IS_GROUP)){
+					oResultSet.moveNext();
+					continue ;
+				}
+				
+				// Retrieve the next Folder in the list
+				String sTraversedGroup =  oResultSet.getFieldValueString(LOGIN);
+				printOut("traversing " + sTraversedGroup);
+				oResultSet.moveNext();
+		
+				// Query the subfolders.
+				ResultSet oResultSet2 = executeCapture("LIST MEMBERS FOR USER GROUP \"" + sTraversedGroup + "\";");
+				oResultSet2.moveFirst();
+				oResultSet2 = (ResultSet) oResultSet2.getFieldValue(MEMBER_RESULTSET);
+				if (oResultSet2.getRowCount() > 0){
+					// There are more subfolders. Add it to the list and process it.
+					oResultSet2.moveFirst();
+					oResultSetCache.add(oResultSet2);
+					// The subfolder processing starts in the outer loop
+					continue ProcessNextFolderLabel;
+				}
+			}
+		
+			// That was the last element at this level. Remove it from the cache.
+			oResultSetCache.remove(oResultSetCache.size() - 1);
+		}
+		printOut("Done");
+	}
 
 }
