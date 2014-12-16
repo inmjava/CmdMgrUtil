@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
@@ -14,6 +15,7 @@ import com.copel.cmdutil.ResultSet;
 public class JavaProcedureCmdMgr extends CmdMgrBase {
 
 	private static final String PATH = null;
+	private static final String ID = null;
 
 	public void addAddreessMultipleUsers(String sUserGroup, String sWebAddress) {
 
@@ -458,19 +460,19 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 	
 	public void listAllProjects(){
 		// Recebe o resultado da consulta
-		ResultSet projectsRS = (ResultSet) executeCapture("LIST ALL PROJECTS");
-
+		ResultSet projectsRS = (ResultSet) executeCapture("LIST ALL PROJECTS;");
+		
 		// Verifica se existe algum resultado
 		if (projectsRS.getRowCount() > 0) {
-
+		
 			// Anda pelo primeiro elemento do ResultSet projectsRS
 			projectsRS.moveFirst();
 			while (!projectsRS.isEof()) {
-
+		
 				// INÍCIO - Implementação sobre o resultset projectsRS
 				printOut(projectsRS.getFieldValueString(NAME));
 				// FIM - Implementação sobre o resultset projectsRS
-
+		
 				// Da continuidade a iteração com o ResultSet
 				// projectsRS
 				projectsRS.moveNext();
@@ -480,51 +482,230 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 	
 	public void recursivelyNavigateGroups(){
 		
-		String topGroup = "PROJ";
+String topGroup = "PROJ";
+
+// Retrieve the initial folder list under the specified top folder
+ResultSet oResultSet = executeCapture("LIST MEMBERS FOR USER GROUP \"" + topGroup + "\";");
+oResultSet.moveFirst();
+oResultSet = (ResultSet) oResultSet.getFieldValue(MEMBER_RESULTSET);
+oResultSet.moveFirst();
+
+// Initialize a Cache for folders.
+List<ResultSet> oResultSetCache = new ArrayList<ResultSet>();
+oResultSetCache.add(oResultSet);
+
+// Loop until there is no more folder list cached.
+ProcessNextFolderLabel: while (oResultSetCache.size() > 0){
+	oResultSet = (ResultSet)oResultSetCache.get(oResultSetCache.size()-1);
+	// The ResultSet always picks up at its last pointed element
+	while (!oResultSet.isEof()){
 		
-		// Retrieve the initial folder list under the specified top folder
-		ResultSet oResultSet = executeCapture("LIST MEMBERS FOR USER GROUP \"" + topGroup + "\";");
-		oResultSet.moveFirst();
-		oResultSet = (ResultSet) oResultSet.getFieldValue(MEMBER_RESULTSET);
-		oResultSet.moveFirst();
-		
-		// Initialize a Cache for folders.
-		List<ResultSet> oResultSetCache = new ArrayList<ResultSet>();
-		oResultSetCache.add(oResultSet);
-		
-		// Loop until there is no more folder list cached.
-		ProcessNextFolderLabel: while (oResultSetCache.size() > 0){
-			oResultSet = (ResultSet)oResultSetCache.get(oResultSetCache.size()-1);
-			// The ResultSet always picks up at its last pointed element
-			while (!oResultSet.isEof()){
-				
-				if(!(Boolean)oResultSet.getFieldValue(IS_GROUP)){
-					oResultSet.moveNext();
-					continue ;
-				}
-				
-				// Retrieve the next Folder in the list
-				String sTraversedGroup =  oResultSet.getFieldValueString(LOGIN);
-				printOut("traversing " + sTraversedGroup);
-				oResultSet.moveNext();
-		
-				// Query the subfolders.
-				ResultSet oResultSet2 = executeCapture("LIST MEMBERS FOR USER GROUP \"" + sTraversedGroup + "\";");
-				oResultSet2.moveFirst();
-				oResultSet2 = (ResultSet) oResultSet2.getFieldValue(MEMBER_RESULTSET);
-				if (oResultSet2.getRowCount() > 0){
-					// There are more subfolders. Add it to the list and process it.
-					oResultSet2.moveFirst();
-					oResultSetCache.add(oResultSet2);
-					// The subfolder processing starts in the outer loop
-					continue ProcessNextFolderLabel;
-				}
-			}
-		
-			// That was the last element at this level. Remove it from the cache.
-			oResultSetCache.remove(oResultSetCache.size() - 1);
+		if(!(Boolean)oResultSet.getFieldValue(IS_GROUP)){
+			oResultSet.moveNext();
+			continue ;
 		}
-		printOut("Done");
+		
+		// Retrieve the next Folder in the list
+		String sTraversedGroup =  oResultSet.getFieldValueString(LOGIN);
+		
+		// Recebe o resultado da consulta
+		ResultSet idRS = (ResultSet) executeCapture("LIST PROPERTIES FOR USER GROUP \"" + sTraversedGroup + "\";");
+
+		// Verifica se existe algum resultado
+		if (idRS.getRowCount() > 0) {
+
+			// Anda pelo primeiro elemento do ResultSet idRS
+			idRS.moveFirst();
+			while (!idRS.isEof()) {
+
+				// INÍCIO - Implementação sobre o resultset idRS
+
+				printOut(sTraversedGroup + "\t\t" + idRS.getFieldValueString(ID));
+				// FIM - Implementação sobre o resultset idRS
+
+				// Da continuidade a iteração com o ResultSet
+				// idRS
+				idRS.moveNext();
+			}
+		}
+		
+		oResultSet.moveNext();
+
+		// Query the subfolders.
+		ResultSet oResultSet2 = executeCapture("LIST MEMBERS FOR USER GROUP \"" + sTraversedGroup + "\";");
+		oResultSet2.moveFirst();
+		oResultSet2 = (ResultSet) oResultSet2.getFieldValue(MEMBER_RESULTSET);
+		if (oResultSet2.getRowCount() > 0){
+			// There are more subfolders. Add it to the list and process it.
+			oResultSet2.moveFirst();
+			oResultSetCache.add(oResultSet2);
+			// The subfolder processing starts in the outer loop
+			continue ProcessNextFolderLabel;
+		}
 	}
 
+	// That was the last element at this level. Remove it from the cache.
+	oResultSetCache.remove(oResultSetCache.size() - 1);
+}
+printOut("Done");
+	}
+	
+	
+	public void printGroupAndId(){
+		LinkedList ll  = new LinkedList();
+		ll.add("AIN");
+		ll.add("AIN-ADM");
+		ll.add("AIN-DSV");
+		ll.add("AIN-MBL");
+		ll.add("AIN-WEB");
+		ll.add("ANC");
+		ll.add("ANC-ADM");
+		ll.add("ANC-DSV");
+		ll.add("ANC-MBL");
+		ll.add("ANC-WEB");
+		ll.add("ANC-WEB-DEP-SUB");
+		ll.add("ANC-WEB-DIR-SUB");
+		ll.add("ANC-WEB-GENERICO");
+		ll.add("ANC-WEB-ORG3");
+		ll.add("ANC-WEB-ORG4");
+		ll.add("ANC-WEB-ORG4-PRE");
+		ll.add("ANC-WEB-ORG5");
+		ll.add("ANC-WEB-ORG5-PRE");
+		ll.add("ANC-WEB-ORG6");
+		ll.add("ANC-WEB-ORG7");
+		ll.add("ANC-WEB-POE");
+		ll.add("ANC-WEB-RH-CTE");
+		ll.add("ANC-WEB-RH-DIS");
+		ll.add("ANC-WEB-RH-GET");
+		ll.add("ANC-WEB-SUP-SUB");
+		ll.add("ANC-WEB-SUP-TODOS");
+		ll.add("ANC-WEB-TOTAL");
+		ll.add("AOV");
+		ll.add("AOV-ADM");
+		ll.add("AOV-DSV");
+		ll.add("AOV-MBL");
+		ll.add("AOV-WEB");
+		ll.add("AOV-WEB-DEP");
+		ll.add("AOV-WEB-DIR");
+		ll.add("AOV-WEB-DIR-SUB");
+		ll.add("AOV-WEB-PRE");
+		ll.add("AOV-WEB-SUP");
+		ll.add("AOV-WEB-SUP-SUB");
+		ll.add("AOV-WEB-TOTAL");
+		ll.add("APT");
+		ll.add("APT-ADM");
+		ll.add("APT-DSV");
+		ll.add("APT-MBL");
+		ll.add("APT-WEB");
+		ll.add("ARH");
+		ll.add("ARH-ADM");
+		ll.add("ARH-DSV");
+		ll.add("ARH-MBL");
+		ll.add("ARH-WEB");
+		ll.add("ASE");
+		ll.add("ASE-ADM");
+		ll.add("ASE-DSV");
+		ll.add("ASE-MBL");
+		ll.add("ASE-WEB");
+		ll.add("DESENV");
+		ll.add("GAI-DGC");
+		ll.add("GAI-Diretorias");
+		ll.add("GCI");
+		ll.add("GCI-ADM");
+		ll.add("GCI-DSV");
+		ll.add("GCI-MBL");
+		ll.add("GCI-WEB");
+		ll.add("GIE");
+		ll.add("GIE-ADM");
+		ll.add("GIE-DSV");
+		ll.add("GIE-MBL");
+		ll.add("GIE-WEB");
+		ll.add("GIR");
+		ll.add("GIR-ADM");
+		ll.add("GIR-DSV");
+		ll.add("GIR-MBL");
+		ll.add("GIR-WEB");
+		ll.add("GRC");
+		ll.add("GRC-ADM");
+		ll.add("GRC-DSV");
+		ll.add("GRC-MBL");
+		ll.add("GRC-WEB");
+		ll.add("GRC-WEB-REGIONAIS");
+		ll.add("GRC-WEB-TOTAL");
+		ll.add("IDE");
+		ll.add("IDE-ADM");
+		ll.add("IDE-DSV");
+		ll.add("IDE-MBL");
+		ll.add("IDE-WEB");
+		ll.add("IGE");
+		ll.add("IGE-ADM");
+		ll.add("IGE-DSV");
+		ll.add("IGE-MBL");
+		ll.add("IGE-WEB");
+		ll.add("IIC");
+		ll.add("IIC-ADM");
+		ll.add("IIC-DSV");
+		ll.add("IIC-MBL");
+		ll.add("IIC-WEB");
+		ll.add("IIE");
+		ll.add("IIE-ADM");
+		ll.add("IIE-DSV");
+		ll.add("IIE-MBL");
+		ll.add("IIE-WEB");
+		ll.add("ING");
+		ll.add("ING-ADM");
+		ll.add("ING-DSV");
+		ll.add("ING-DSV-DIS");
+		ll.add("ING-MBL");
+		ll.add("ING-WEB");
+		ll.add("ING-WEB-DIS");
+		ll.add("IQO");
+		ll.add("IQO-ADM");
+		ll.add("IQO-DSV");
+		ll.add("IQO-MBL");
+		ll.add("IQO-WEB");
+		ll.add("ITE");
+		ll.add("ITE-ADM");
+		ll.add("ITE-DSV");
+		ll.add("ITE-MBL");
+		ll.add("ITE-WEB");
+		ll.add("ITE-WEB-SUP");
+		ll.add("SOP");
+		ll.add("SOP-ADM");
+		ll.add("SOP-DSV");
+		ll.add("SOP-MBL");
+		ll.add("SOP-WEB");
+		ll.add("TRT");
+		ll.add("TRT-ADM");
+		ll.add("TRT-DSV");
+		ll.add("TRT-MBL");
+		ll.add("TRT-WEB");
+		
+		for (int i = 0; i < ll.size(); i++) {
+			
+			String groupName = (String) ll.get(i);
+			
+			// Recebe o resultado da consulta
+			ResultSet idRS = (ResultSet) executeCapture("LIST PROPERTIES FOR USER GROUP \"" + groupName + "\";");
+	
+			// Verifica se existe algum resultado
+			if (idRS.getRowCount() > 0) {
+	
+				// Anda pelo primeiro elemento do ResultSet idRS
+				idRS.moveFirst();
+				while (!idRS.isEof()) {
+	
+					// INÍCIO - Implementação sobre o resultset idRS
+	
+					printOut(groupName + "\t\t" + idRS.getFieldValueString(ID));
+					// FIM - Implementação sobre o resultset idRS
+	
+					// Da continuidade a iteração com o ResultSet
+					// idRS
+					idRS.moveNext();
+				}
+			}
+		}
+	}
+	
 }
