@@ -708,4 +708,31 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 		}
 	}
 	
+	public void listAllTokensSecurityRole(){
+		// Recebe o resultado da consulta
+		ResultSet consultaVarRS = executeCapture("LIST ALL PRIVILEGES FOR SECURITY ROLE \"Web\";");
+		consultaVarRS.moveFirst();
+
+		// Verifica se existe algum resultado
+		while (!consultaVarRS.isEof()) {
+			
+			ResultSet tokenRS = (ResultSet) consultaVarRS.getFieldValue(1);
+			tokenRS.getRowCount();
+
+			// Anda pelo primeiro elemento do ResultSet consultaVarRS
+			tokenRS.moveFirst();
+			while (!tokenRS.isEof()) {
+
+				// INÍCIO - Implementação sobre o resultset consultaVarRS
+				printOut(tokenRS.getFieldValueString(1));
+				// FIM - Implementação sobre o resultset consultaVarRS
+
+				// Da continuidade a iteração com o ResultSet
+				// consultaVarRS
+				tokenRS.moveNext();
+			}
+			consultaVarRS.moveNext();
+		}
+	}
+	
 }

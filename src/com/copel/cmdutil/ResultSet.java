@@ -32,4 +32,14 @@ public class ResultSet {
 		return 0;
 	}
 
+	public ResultSet getFieldValue(int i) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getFieldValueString(int i) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
