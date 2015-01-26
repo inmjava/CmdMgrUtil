@@ -710,29 +710,179 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 	
 	public void listAllTokensSecurityRole(){
 		// Recebe o resultado da consulta
-		ResultSet consultaVarRS = executeCapture("LIST ALL PRIVILEGES FOR SECURITY ROLE \"Web\";");
-		consultaVarRS.moveFirst();
-
+		ResultSet securityRoleRS = (ResultSet) executeCapture("LIST SECURITY ROLES;");
+		
 		// Verifica se existe algum resultado
-		while (!consultaVarRS.isEof()) {
-			
-			ResultSet tokenRS = (ResultSet) consultaVarRS.getFieldValue(1);
-			tokenRS.getRowCount();
-
-			// Anda pelo primeiro elemento do ResultSet consultaVarRS
-			tokenRS.moveFirst();
-			while (!tokenRS.isEof()) {
-
-				// INÍCIO - Implementação sobre o resultset consultaVarRS
-				printOut(tokenRS.getFieldValueString(1));
-				// FIM - Implementação sobre o resultset consultaVarRS
-
+		if (securityRoleRS.getRowCount() > 0) {
+		
+			// Anda pelo primeiro elemento do ResultSet securityRoleRS
+			securityRoleRS.moveFirst();
+			while (!securityRoleRS.isEof()) {
+		
+				// INÍCIO - Implementação sobre o resultset securityRoleRS
+				String secRole = securityRoleRS.getFieldValueString(NAME);
+		
+				printOut("");
+				printOut(secRole);
+				
+				// Recebe o resultado da consulta
+				ResultSet privilegesRS = executeCapture("LIST ALL PRIVILEGES FOR SECURITY ROLE \"" + secRole + "\";");
+				privilegesRS.moveFirst();
+		
+				// Verifica se existe algum resultado
+				while (!privilegesRS.isEof()) {
+		
+					ResultSet tokenRS = (ResultSet) privilegesRS.getFieldValue(1);
+					tokenRS.getRowCount();
+		
+					// Anda pelo primeiro elemento do ResultSet consultaVarRS
+					tokenRS.moveFirst();
+					while (!tokenRS.isEof()) {
+		
+						// INÍCIO - Implementação sobre o resultset consultaVarRS
+						printOut(tokenRS.getFieldValueString(1));
+						// FIM - Implementação sobre o resultset consultaVarRS
+		
+						// Da continuidade a iteração com o ResultSet
+						// consultaVarRS
+						tokenRS.moveNext();
+					}
+					privilegesRS.moveNext();
+				}
+		
+				// FIM - Implementação sobre o resultset securityRoleRS
+		
 				// Da continuidade a iteração com o ResultSet
-				// consultaVarRS
-				tokenRS.moveNext();
+				// securityRoleRS
+				securityRoleRS.moveNext();
 			}
-			consultaVarRS.moveNext();
 		}
 	}
 	
+	public void listMembersSecurityRoleByProject(){
+		// Recebe o resultado da consulta
+		ResultSet projectRS = (ResultSet) executeCapture("LIST ALL PROJECTS;");
+
+		// Verifica se existe algum resultado
+		if (projectRS.getRowCount() > 0) {
+
+			// Anda pelo primeiro elemento do ResultSet projectRS
+			projectRS.moveFirst();
+			while (!projectRS.isEof()) {
+
+				// INÍCIO - Implementação sobre o resultset projectRS
+				String projectName = projectRS.getFieldValueString(NAME);
+
+				// Recebe o resultado da consulta
+				ResultSet securityRoleRS = (ResultSet) executeCapture("LIST SECURITY ROLES;");
+
+				// Verifica se existe algum resultado
+				if (securityRoleRS.getRowCount() > 0) {
+
+					// Anda pelo primeiro elemento do ResultSet securityRoleRS
+					securityRoleRS.moveFirst();
+					while (!securityRoleRS.isEof()) {
+
+						// INÍCIO - Implementação sobre o resultset securityRoleRS
+						String secRoleName = securityRoleRS.getFieldValueString(NAME);
+
+						// Recebe o resultado da consulta
+						ResultSet membersSecRoleByProjectRS = (ResultSet) executeCapture("LIST ALL MEMBERS FOR SECURITY ROLE \"" + secRoleName + "\" IN PROJECT \"" + projectName + "\";");
+						membersSecRoleByProjectRS.moveFirst();
+						membersSecRoleByProjectRS = (ResultSet) membersSecRoleByProjectRS.getFieldValue(MEMBER_RESULTSET);
+						membersSecRoleByProjectRS.moveFirst();
+
+						// Verifica se existe algum resultado
+						if (membersSecRoleByProjectRS.getRowCount() > 0) {
+
+							// Anda pelo primeiro elemento do ResultSet membersSecRoleByProjectRS
+							membersSecRoleByProjectRS.moveFirst();
+							while (!membersSecRoleByProjectRS.isEof()) {
+
+								// INÍCIO - Implementação sobre o resultset membersSecRoleByProjectRS
+								String membersSecRoleByProject = membersSecRoleByProjectRS.getFieldValueString(0);
+								printOut(projectName + ";" + secRoleName + ";" + membersSecRoleByProject);
+								// FIM - Implementação sobre o resultset membersSecRoleByProjectRS
+
+								// Da continuidade a iteração com o ResultSet
+								// membersSecRoleByProjectRS
+								membersSecRoleByProjectRS.moveNext();
+							}
+						}
+
+						// FIM - Implementação sobre o resultset securityRoleRS
+
+						// Da continuidade a iteração com o ResultSet
+						// securityRoleRS
+						securityRoleRS.moveNext();
+					}
+				}
+
+				// FIM - Implementação sobre o resultset projectRS
+
+				// Da continuidade a iteração com o ResultSet
+				// projectRS
+				projectRS.moveNext();
+			}
+		}
+	}
+	
+	public void tempListMembersSecurityRoleByProject(){
+		
+		// Recebe o resultado da consulta
+		ResultSet membersSecRoleByProjectRS = (ResultSet) executeCapture("LIST ALL MEMBERS FOR SECURITY ROLE \"Web\" IN PROJECT \"AIN - Analise de Interrupcoes\";");
+		membersSecRoleByProjectRS.moveFirst();
+		membersSecRoleByProjectRS = (ResultSet) membersSecRoleByProjectRS.getFieldValue(MEMBER_RESULTSET);
+		membersSecRoleByProjectRS.moveFirst();
+		
+		// Verifica se existe algum resultado
+		if (membersSecRoleByProjectRS.getRowCount() > 0) {
+		
+			// Anda pelo primeiro elemento do ResultSet membersSecRoleByProjectRS
+			membersSecRoleByProjectRS.moveFirst();
+			while (!membersSecRoleByProjectRS.isEof()) {
+		
+				// INÍCIO - Implementação sobre o resultset membersSecRoleByProjectRS
+				String membersSecRoleByProject = membersSecRoleByProjectRS.getFieldValueString(NAME);
+				printOut(membersSecRoleByProject);
+				// FIM - Implementação sobre o resultset membersSecRoleByProjectRS
+		
+				// Da continuidade a iteração com o ResultSet
+				// membersSecRoleByProjectRS
+				membersSecRoleByProjectRS.moveNext();
+			}
+		}
+		
+	}
+	
+	public void addEMWarehouseToProjects(){
+		// Recebe o resultado da consulta
+		ResultSet listProjectRS = executeCapture("LIST PROJECTS;");
+		
+		// Verifica se existe algum resultado
+		if (listProjectRS.getRowCount() > 0) {
+		
+		    // Anda pelo primeiro elemento do ResultSet listProjectRS
+		    listProjectRS.moveFirst();
+		    while (!listProjectRS.isEof()) {
+		       
+		        // INÍCIO - Implementação sobre o resultset listProjectRS
+		        execute("ALTER STATISTICS DBINSTANCE \"Warehouse - Enterprise Manager\" " +
+		                                "BASICSTATS ENABLED " +
+		                                "DETAILEDREPJOBS TRUE " +
+		                                "DETAILEDDOCJOBS TRUE " +
+		                                "JOBSQL TRUE " +
+		                                "COLUMNSTABLES TRUE " +
+		                                "PROMPTANSWERS TRUE " +
+		                                "SUBSCRIPTIONDELIVERIES TRUE " +
+		                                "IN PROJECT \"" + listProjectRS.getFieldValueString(NAME) + "\";");
+		        // FIM - Implementação sobre o resultset listProjectRS
+		
+		        // Da continuidade a iteração com o ResultSet
+		        // listProjectRS
+		        listProjectRS.moveNext();
+		    }
+		}
+
+	}
 }
