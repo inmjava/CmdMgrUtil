@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import java.util.Locale.Category;
 
 import com.copel.cmdutil.ResultSet;
 
@@ -883,6 +884,170 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 		        listProjectRS.moveNext();
 		    }
 		}
+	}
+	
+	public void criarLinkPorProjeto(){
+		String serverURL = "apldwhprd";
+		String serverNameUpperCase = "APLDWHPRD";
+		String urlLink = "http://%s/MicroStrategyLDAP/servlet/mstrServerAdmin?evt=1001&src=mstrServerAdmin.groups.ugb.1001&objectID=%s&Server=%s";
+		
+		// Recebe o resultado da consulta
+		ResultSet projetosRS = executeCapture("LIST ALL PROJECTS;");
+		
+		// Verifica se existe algum resultado
+		if (projetosRS.getRowCount() > 0) {
+		
+		    // Anda pelo primeiro elemento do ResultSet projetosRS
+		    projetosRS.moveFirst();
+		    while (!projetosRS.isEof()) {
+		
+		        // INÍCIO - Implementação sobre o resultset projetosRS
+		
+		        String nomeProjeto = projetosRS.getFieldValueString(NAME);
+		        //nomeProjeto = nomeProjeto.substring(17);
+		        String siglaNomeProjeto = nomeProjeto.substring(0, 3);
+		        
+		        // Recebe o resultado da consulta
+		        ResultSet groupPropertiesRS = executeCapture("LIST ALL PROPERTIES FOR USER GROUP \"" + siglaNomeProjeto + "\";");
+		
+		        // Verifica se existe algum resultado
+		        if (groupPropertiesRS.getRowCount() > 0) {
+		
+		            // Anda pelo primeiro elemento do ResultSet groupPropertiesRS
+		            groupPropertiesRS.moveFirst();
+		            if (!groupPropertiesRS.isEof()) {
+		
+		                // INÍCIO - Implementação sobre o resultset groupPropertiesRS
+		                printOut("<tr>");
+		                printOut("   <td>" + nomeProjeto + "</td>");
+		                printOut("   <td><a href=\"" + String.format(urlLink, serverURL, groupPropertiesRS.getFieldValueString(ID), serverNameUpperCase) + "\">Iniciar</a></td>");
+		                printOut("</tr>");
+		                // FIM - Implementação sobre o resultset groupPropertiesRS
+		
+		                // Da continuidade a iteração com o ResultSet
+		                // groupPropertiesRS
+		                groupPropertiesRS.moveNext();
+		            }
+		        }
+		
+		        // FIM - Implementação sobre o resultset projetosRS
+		
+		        // Da continuidade a iteração com o ResultSet
+		        // projetosRS
+		        projetosRS.moveNext();
+		    }
+		}
 
 	}
+	
+	public void criarGrupoPadraoCopel(){
+		String nomeProjeto = "SSB - Self Service BI";
+		if ((nomeProjeto.charAt(3) + "").equals(" ")) {
+		    String siglaNomeProjeto = nomeProjeto.substring(0, 3);
+		
+		    // Caso o grupo não exista
+		    execute("CREATE USER GROUP \"" + siglaNomeProjeto + "\" DESCRIPTION \"Agrupa tipos diferentes de permissões de usuários para o projeto " + nomeProjeto + "\"  IN GROUP \"PROJ\";");
+		
+		    execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-ADM\" DESCRIPTION \"Agupa usuários principais, com permissão de adicionar usuários em grupos, para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
+		    execute("ALTER USER GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"USERADM\";");
+		
+		    execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-DSV\" DESCRIPTION \"Agupa desenvolvedores para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
+		    execute("GRANT SECURITY ROLE \"_Desenvolvedor\" TO GROUP \"" + siglaNomeProjeto + "-DSV\" FOR PROJECT \"" + nomeProjeto + "\";");
+		
+		    execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-MBL\" DESCRIPTION \"Agupa  usuários finais com permissão mobile para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
+		    execute("GRANT SECURITY ROLE \"_Mobile\" TO GROUP \"" + siglaNomeProjeto + "-MBL\" FOR PROJECT \"" + nomeProjeto + "\";");
+		
+		    execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-WEB\" DESCRIPTION \"Agupa  usuários finais com permissão web para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
+		    execute("GRANT SECURITY ROLE \"_Web\" TO GROUP \"" + siglaNomeProjeto + "-WEB\" FOR PROJECT \"" + nomeProjeto + "\";");
+		
+		    execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-SSBI\" DESCRIPTION \"Agupa  usuários finais com permissão Self Service BI para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
+		    execute("GRANT SECURITY ROLE \"_SelfServiceBi\" TO GROUP \"" + siglaNomeProjeto + "-WEB\" FOR PROJECT \"" + nomeProjeto + "\";");
+		
+		    // Recebe o resultado da consulta
+		    ResultSet aclGroupRS = executeCapture("LIST PROPERTIES FOR ACL FROM GROUP \"" + siglaNomeProjeto + "\";");
+		
+		    // Verifica se existe algum resultado
+		    if (aclGroupRS.getRowCount() > 0) {
+		
+		        // Anda pelo primeiro elemento do ResultSet
+		        // aclGroupRS
+		        aclGroupRS.moveFirst();
+		        while (!aclGroupRS.isEof()) {
+		
+		            // INÍCIO - Implementação sobre o resultset
+		            // aclGroupRS
+		            String groupName = aclGroupRS.getFieldValueString(TRUSTEE_NAME);
+		            execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "\" GROUP \"" + groupName + "\";");
+		            execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"" + groupName + "\";");
+		            execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"" + groupName + "\";");
+		            execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"" + groupName + "\";");
+		            execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"" + groupName + "\";");
+		            execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"" + groupName + "\";");
+		            // FIM - Implementação sobre o resultset
+		            // aclGroupRS
+		
+		            // Da continuidade a iteração com o ResultSet
+		            // aclGroupRS
+		            aclGroupRS.moveNext();
+		        }
+		
+		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "\" GROUP \"Administrator\";");
+		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"Administrator\";");
+		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"Administrator\";");
+		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"Administrator\";");
+		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"Administrator\";");
+		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"Administrator\";");
+		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "\" GROUP \"System Monitors\";");
+		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"System Monitors\";");
+		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"System Monitors\";");
+		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"System Monitors\";");
+		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"System Monitors\";");
+		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"System Monitors\";");
+		
+		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
+		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
+		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
+		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
+		
+		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
+		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
+		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
+		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
+		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
+		    }
+		}
+
+        // FIM - Implementação sobre o resultset projetosRS
+
+        // Da continuidade a iteração com o ResultSet
+        // projetosRS
+	}
+	
+	public void listaPrivilegiosSecurityRole(){
+		String securityRoleName = "_Arquiteto";
+		
+		// Recebe o resultado da consulta
+		ResultSet securityRolePrivilegesRS = (ResultSet) executeCapture("LIST PRIVILEGES FOR SECURITY ROLE \"" + securityRoleName + "\";");
+		
+		// Verifica se existe algum resultado
+		if (securityRolePrivilegesRS.getRowCount() > 0) {
+		
+			// Anda pelo primeiro elemento do ResultSet securityRolePrivilegesRS
+			securityRolePrivilegesRS.moveFirst();
+			while (!securityRolePrivilegesRS.isEof()) {
+		
+				// INÍCIO - Implementação sobre o resultset securityRolePrivilegesRS
+				
+				
+				
+				printOut(securityRolePrivilegesRS.getFieldValueString(0));
+				// FIM - Implementação sobre o resultset securityRolePrivilegesRS
+		
+				// Da continuidade a iteração com o ResultSet
+				// securityRolePrivilegesRS
+				securityRolePrivilegesRS.moveNext();
+			}
+		}
+	}
+	
 }
