@@ -254,22 +254,22 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 
 		String dir = "\\\\Public Objects\\Reports";
 		String projeto = "AIN - Analise de Interrupcoes";
-		
+
 		// Recebe o resultado da consulta
 		ResultSet listaDirRS = (ResultSet) executeCapture("LIST ALL FOLDERS IN \"" + dir + "\" FOR PROJECT \"" + projeto + "\";");
-		
+
 		// Verifica se existe algum resultado
 		if (listaDirRS.getRowCount() > 0) {
-		
+
 			// Anda pelo primeiro elemento do ResultSet listaDirRS
 			listaDirRS.moveFirst();
 			while (!listaDirRS.isEof()) {
-		
+
 				// INÍCIO - Implementação sobre o resultset listaDirRS
 				String newDir = dir + "\\" + listaDirRS.getFieldValueString(NAME);
 				printOut(newDir);
 				// FIM - Implementação sobre o resultset listaDirRS
-		
+
 				// Da continuidade a iteração com o ResultSet
 				// listaDirRS
 				listaDirRS.moveNext();
@@ -351,21 +351,21 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 			printOut("No ACE exists for the specified folder.");
 		}
 	}
-	
+
 	public void addAceOnFolder(){
 
 		int numOfDays = 1;
 		String folderName = "";
 		String projectName = "";
 		String userName = "";
-		
+
 		printOut("starting execution...");
 		//to get creation time that is numOfDays before today
 		Calendar oTime = Calendar.getInstance();
-		
+
 		oTime.set(Calendar.DAY_OF_MONTH, oTime.get(Calendar.DAY_OF_MONTH) - numOfDays);
 
-		
+
 		// Retrieve the initial folder list under the specified top folder
 		String sQuery = "LIST ALL FOLDERS IN \"" + folderName + "\" FOR PROJECT \"" + projectName + "\";";
 		ResultSet oFolders = executeCapture(sQuery);
@@ -413,7 +413,7 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 				while(!oReports.isEof()){    
 					String sReportName = oReports.getFieldValueString(DisplayPropertyEnum.NAME);
 					sQuery = "LIST ALL PROPERTIES FOR REPORT \"" + sReportName
-						+ "\" IN FOLDER \"" + folderName + "\" FOR PROJECT \"" + projectName + "\";";
+							+ "\" IN FOLDER \"" + folderName + "\" FOR PROJECT \"" + projectName + "\";";
 					ResultSet reportProperties = executeCapture(sQuery);
 					reportProperties.moveFirst();
 
@@ -422,7 +422,7 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 					if(reportCreateTime != null && reportCreateTime.after(oTime.getTime())){
 						/** do ACE action here for reports in the current folder **/
 						sQuery = "ADD ACE FOR REPORT \"" + sReportName + "\" IN FOLDER \"" + folderName + "\" USER \"" + userName
-							+ "\" ACCESSRIGHTS FULLCONTROL FOR PROJECT \"" + projectName + "\";";
+								+ "\" ACCESSRIGHTS FULLCONTROL FOR PROJECT \"" + projectName + "\";";
 						execute(sQuery);
 						printOut("add '" + userName + "' ace successfully for report '" + sReportName + "' in '" + folderName + "'");
 						/** ending of ACE action for reports in the current folder **/
@@ -440,7 +440,7 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 				if(folderCreateTime != null && folderCreateTime.after(oTime.getTime())){
 					/** do ACE action here for the current folder **/ 
 					sQuery = "ADD ACE FOR FOLDER \"" + sFolderName + "\" IN FOLDER \"" + sPath + "\" USER \"" + userName
-						+ "\" ACCESSRIGHTS FULLCONTROL CHILDRENACCESSRIGHTS MODIFY FOR PROJECT \"" + projectName + "\";";
+							+ "\" ACCESSRIGHTS FULLCONTROL CHILDRENACCESSRIGHTS MODIFY FOR PROJECT \"" + projectName + "\";";
 					execute(sQuery);
 					printOut("add '" + userName + "' ace successfully for folder '" + folderName + "'");
 					/*** ending of ace action on the current folder **/
@@ -458,80 +458,80 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 
 		printOut("Done.");
 	}
-	
+
 	public void listAllProjects(){
 		// Recebe o resultado da consulta
 		ResultSet projectsRS = (ResultSet) executeCapture("LIST ALL PROJECTS;");
-		
+
 		// Verifica se existe algum resultado
 		if (projectsRS.getRowCount() > 0) {
-		
+
 			// Anda pelo primeiro elemento do ResultSet projectsRS
 			projectsRS.moveFirst();
 			while (!projectsRS.isEof()) {
-		
+
 				// INÍCIO - Implementação sobre o resultset projectsRS
 				printOut(projectsRS.getFieldValueString(NAME));
 				// FIM - Implementação sobre o resultset projectsRS
-		
+
 				// Da continuidade a iteração com o ResultSet
 				// projectsRS
 				projectsRS.moveNext();
 			}
 		}
 	}
-	
+
 	public void recursivelyNavigateGroups(){
-		
+
 		String topGroup = "PROJ";
-		
+
 		// Retrieve the initial folder list under the specified top folder
 		ResultSet oResultSet = executeCapture("LIST MEMBERS FOR USER GROUP \"" + topGroup + "\";");
 		oResultSet.moveFirst();
 		oResultSet = (ResultSet) oResultSet.getFieldValue(MEMBER_RESULTSET);
 		oResultSet.moveFirst();
-		
+
 		// Initialize a Cache for folders.
 		List<ResultSet> oResultSetCache = new ArrayList<ResultSet>();
 		oResultSetCache.add(oResultSet);
-		
+
 		// Loop until there is no more folder list cached.
 		ProcessNextFolderLabel: while (oResultSetCache.size() > 0){
 			oResultSet = (ResultSet)oResultSetCache.get(oResultSetCache.size()-1);
 			// The ResultSet always picks up at its last pointed element
 			while (!oResultSet.isEof()){
-				
+
 				if(!(Boolean)oResultSet.getFieldValue(IS_GROUP)){
 					oResultSet.moveNext();
 					continue ;
 				}
-				
+
 				// Retrieve the next Folder in the list
 				String sTraversedGroup =  oResultSet.getFieldValueString(LOGIN);
-				
+
 				// Recebe o resultado da consulta
 				ResultSet idRS = (ResultSet) executeCapture("LIST PROPERTIES FOR USER GROUP \"" + sTraversedGroup + "\";");
-		
+
 				// Verifica se existe algum resultado
 				if (idRS.getRowCount() > 0) {
-		
+
 					// Anda pelo primeiro elemento do ResultSet idRS
 					idRS.moveFirst();
 					while (!idRS.isEof()) {
-		
+
 						// INÍCIO - Implementação sobre o resultset idRS
-		
+
 						printOut(sTraversedGroup + "\t\t" + idRS.getFieldValueString(ID));
 						// FIM - Implementação sobre o resultset idRS
-		
+
 						// Da continuidade a iteração com o ResultSet
 						// idRS
 						idRS.moveNext();
 					}
 				}
-				
+
 				oResultSet.moveNext();
-		
+
 				// Query the subfolders.
 				ResultSet oResultSet2 = executeCapture("LIST MEMBERS FOR USER GROUP \"" + sTraversedGroup + "\";");
 				oResultSet2.moveFirst();
@@ -544,14 +544,14 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 					continue ProcessNextFolderLabel;
 				}
 			}
-		
+
 			// That was the last element at this level. Remove it from the cache.
 			oResultSetCache.remove(oResultSetCache.size() - 1);
 		}
 		printOut("Done");
 	}
-	
-	
+
+
 	public void printGroupAndId(){
 		LinkedList ll  = new LinkedList();
 		ll.add("AIN");
@@ -681,26 +681,26 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 		ll.add("TRT-DSV");
 		ll.add("TRT-MBL");
 		ll.add("TRT-WEB");
-		
+
 		for (int i = 0; i < ll.size(); i++) {
-			
+
 			String groupName = (String) ll.get(i);
-			
+
 			// Recebe o resultado da consulta
 			ResultSet idRS = (ResultSet) executeCapture("LIST PROPERTIES FOR USER GROUP \"" + groupName + "\";");
-	
+
 			// Verifica se existe algum resultado
 			if (idRS.getRowCount() > 0) {
-	
+
 				// Anda pelo primeiro elemento do ResultSet idRS
 				idRS.moveFirst();
 				while (!idRS.isEof()) {
-	
+
 					// INÍCIO - Implementação sobre o resultset idRS
-	
+
 					printOut(groupName + "\t\t" + idRS.getFieldValueString(ID));
 					// FIM - Implementação sobre o resultset idRS
-	
+
 					// Da continuidade a iteração com o ResultSet
 					// idRS
 					idRS.moveNext();
@@ -708,58 +708,58 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 			}
 		}
 	}
-	
+
 	public void listAllTokensSecurityRole(){
 		// Recebe o resultado da consulta
 		ResultSet securityRoleRS = (ResultSet) executeCapture("LIST SECURITY ROLES;");
-		
+
 		// Verifica se existe algum resultado
 		if (securityRoleRS.getRowCount() > 0) {
-		
+
 			// Anda pelo primeiro elemento do ResultSet securityRoleRS
 			securityRoleRS.moveFirst();
 			while (!securityRoleRS.isEof()) {
-		
+
 				// INÍCIO - Implementação sobre o resultset securityRoleRS
 				String secRole = securityRoleRS.getFieldValueString(NAME);
-		
+
 				printOut("");
 				printOut(secRole);
-				
+
 				// Recebe o resultado da consulta
 				ResultSet privilegesRS = executeCapture("LIST ALL PRIVILEGES FOR SECURITY ROLE \"" + secRole + "\";");
 				privilegesRS.moveFirst();
-		
+
 				// Verifica se existe algum resultado
 				while (!privilegesRS.isEof()) {
-		
+
 					ResultSet tokenRS = (ResultSet) privilegesRS.getFieldValue(1);
 					tokenRS.getRowCount();
-		
+
 					// Anda pelo primeiro elemento do ResultSet consultaVarRS
 					tokenRS.moveFirst();
 					while (!tokenRS.isEof()) {
-		
+
 						// INÍCIO - Implementação sobre o resultset consultaVarRS
 						printOut(tokenRS.getFieldValueString(1));
 						// FIM - Implementação sobre o resultset consultaVarRS
-		
+
 						// Da continuidade a iteração com o ResultSet
 						// consultaVarRS
 						tokenRS.moveNext();
 					}
 					privilegesRS.moveNext();
 				}
-		
+
 				// FIM - Implementação sobre o resultset securityRoleRS
-		
+
 				// Da continuidade a iteração com o ResultSet
 				// securityRoleRS
 				securityRoleRS.moveNext();
 			}
 		}
 	}
-	
+
 	public void listMembersSecurityRoleByProject(){
 		// Recebe o resultado da consulta
 		ResultSet projectRS = (ResultSet) executeCapture("LIST ALL PROJECTS;");
@@ -827,260 +827,275 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 			}
 		}
 	}
-	
+
 	public void tempListMembersSecurityRoleByProject(){
-		
+
 		// Recebe o resultado da consulta
 		ResultSet membersSecRoleByProjectRS = (ResultSet) executeCapture("LIST ALL MEMBERS FOR SECURITY ROLE \"Web\" IN PROJECT \"AIN - Analise de Interrupcoes\";");
 		membersSecRoleByProjectRS.moveFirst();
 		membersSecRoleByProjectRS = (ResultSet) membersSecRoleByProjectRS.getFieldValue(MEMBER_RESULTSET);
 		membersSecRoleByProjectRS.moveFirst();
-		
+
 		// Verifica se existe algum resultado
 		if (membersSecRoleByProjectRS.getRowCount() > 0) {
-		
+
 			// Anda pelo primeiro elemento do ResultSet membersSecRoleByProjectRS
 			membersSecRoleByProjectRS.moveFirst();
 			while (!membersSecRoleByProjectRS.isEof()) {
-		
+
 				// INÍCIO - Implementação sobre o resultset membersSecRoleByProjectRS
 				String membersSecRoleByProject = membersSecRoleByProjectRS.getFieldValueString(NAME);
 				printOut(membersSecRoleByProject);
 				// FIM - Implementação sobre o resultset membersSecRoleByProjectRS
-		
+
 				// Da continuidade a iteração com o ResultSet
 				// membersSecRoleByProjectRS
 				membersSecRoleByProjectRS.moveNext();
 			}
 		}
-		
+
 	}
-	
+
 	public void addEMWarehouseToProjects(){
 		// Recebe o resultado da consulta
 		ResultSet listProjectRS = executeCapture("LIST PROJECTS;");
-		
+
 		// Verifica se existe algum resultado
 		if (listProjectRS.getRowCount() > 0) {
-		
-		    // Anda pelo primeiro elemento do ResultSet listProjectRS
-		    listProjectRS.moveFirst();
-		    while (!listProjectRS.isEof()) {
-		       
-		        // INÍCIO - Implementação sobre o resultset listProjectRS
-		        execute("ALTER STATISTICS DBINSTANCE \"Warehouse - Enterprise Manager\" " +
-		                                "BASICSTATS ENABLED " +
-		                                "DETAILEDREPJOBS TRUE " +
-		                                "DETAILEDDOCJOBS TRUE " +
-		                                "JOBSQL TRUE " +
-		                                "COLUMNSTABLES TRUE " +
-		                                "PROMPTANSWERS TRUE " +
-		                                "SUBSCRIPTIONDELIVERIES TRUE " +
-		                                "IN PROJECT \"" + listProjectRS.getFieldValueString(NAME) + "\";");
-		        // FIM - Implementação sobre o resultset listProjectRS
-		
-		        // Da continuidade a iteração com o ResultSet
-		        // listProjectRS
-		        listProjectRS.moveNext();
-		    }
+
+			// Anda pelo primeiro elemento do ResultSet listProjectRS
+			listProjectRS.moveFirst();
+			while (!listProjectRS.isEof()) {
+
+				// INÍCIO - Implementação sobre o resultset listProjectRS
+				execute("ALTER STATISTICS DBINSTANCE \"Warehouse - Enterprise Manager\" " +
+						"BASICSTATS ENABLED " +
+						"DETAILEDREPJOBS TRUE " +
+						"DETAILEDDOCJOBS TRUE " +
+						"JOBSQL TRUE " +
+						"COLUMNSTABLES TRUE " +
+						"PROMPTANSWERS TRUE " +
+						"SUBSCRIPTIONDELIVERIES TRUE " +
+						"IN PROJECT \"" + listProjectRS.getFieldValueString(NAME) + "\";");
+				// FIM - Implementação sobre o resultset listProjectRS
+
+				// Da continuidade a iteração com o ResultSet
+				// listProjectRS
+				listProjectRS.moveNext();
+			}
 		}
 	}
-	
+
 	public void criarLinkPorProjeto(){
 		String serverURL = "apldwhprd";
 		String serverNameUpperCase = "APLDWHPRD";
 		String urlLink = "http://%s/MicroStrategyLDAP/servlet/mstrServerAdmin?evt=1001&src=mstrServerAdmin.groups.ugb.1001&objectID=%s&Server=%s";
-		
+
 		// Recebe o resultado da consulta
 		ResultSet projetosRS = executeCapture("LIST ALL PROJECTS;");
-		
+
 		// Verifica se existe algum resultado
 		if (projetosRS.getRowCount() > 0) {
-		
-		    // Anda pelo primeiro elemento do ResultSet projetosRS
-		    projetosRS.moveFirst();
-		    while (!projetosRS.isEof()) {
-		
-		        // INÍCIO - Implementação sobre o resultset projetosRS
-		
-		        String nomeProjeto = projetosRS.getFieldValueString(NAME);
-		        //nomeProjeto = nomeProjeto.substring(17);
-		        String siglaNomeProjeto = nomeProjeto.substring(0, 3);
-		        
-		        // Recebe o resultado da consulta
-		        ResultSet groupPropertiesRS = executeCapture("LIST ALL PROPERTIES FOR USER GROUP \"" + siglaNomeProjeto + "\";");
-		
-		        // Verifica se existe algum resultado
-		        if (groupPropertiesRS.getRowCount() > 0) {
-		
-		            // Anda pelo primeiro elemento do ResultSet groupPropertiesRS
-		            groupPropertiesRS.moveFirst();
-		            if (!groupPropertiesRS.isEof()) {
-		
-		                // INÍCIO - Implementação sobre o resultset groupPropertiesRS
-		                printOut("<tr>");
-		                printOut("   <td>" + nomeProjeto + "</td>");
-		                printOut("   <td><a href=\"" + String.format(urlLink, serverURL, groupPropertiesRS.getFieldValueString(ID), serverNameUpperCase) + "\">Iniciar</a></td>");
-		                printOut("</tr>");
-		                // FIM - Implementação sobre o resultset groupPropertiesRS
-		
-		                // Da continuidade a iteração com o ResultSet
-		                // groupPropertiesRS
-		                groupPropertiesRS.moveNext();
-		            }
-		        }
-		
-		        // FIM - Implementação sobre o resultset projetosRS
-		
-		        // Da continuidade a iteração com o ResultSet
-		        // projetosRS
-		        projetosRS.moveNext();
-		    }
+
+			// Anda pelo primeiro elemento do ResultSet projetosRS
+			projetosRS.moveFirst();
+			while (!projetosRS.isEof()) {
+
+				// INÍCIO - Implementação sobre o resultset projetosRS
+
+				String nomeProjeto = projetosRS.getFieldValueString(NAME);
+				//nomeProjeto = nomeProjeto.substring(17);
+				String siglaNomeProjeto = nomeProjeto.substring(0, 3);
+
+				// Recebe o resultado da consulta
+				ResultSet groupPropertiesRS = executeCapture("LIST ALL PROPERTIES FOR USER GROUP \"" + siglaNomeProjeto + "\";");
+
+				// Verifica se existe algum resultado
+				if (groupPropertiesRS.getRowCount() > 0) {
+
+					// Anda pelo primeiro elemento do ResultSet groupPropertiesRS
+					groupPropertiesRS.moveFirst();
+					if (!groupPropertiesRS.isEof()) {
+
+						// INÍCIO - Implementação sobre o resultset groupPropertiesRS
+						printOut("<tr>");
+						printOut("   <td>" + nomeProjeto + "</td>");
+						printOut("   <td><a href=\"" + String.format(urlLink, serverURL, groupPropertiesRS.getFieldValueString(ID), serverNameUpperCase) + "\">Iniciar</a></td>");
+						printOut("</tr>");
+						// FIM - Implementação sobre o resultset groupPropertiesRS
+
+						// Da continuidade a iteração com o ResultSet
+						// groupPropertiesRS
+						groupPropertiesRS.moveNext();
+					}
+				}
+
+				// FIM - Implementação sobre o resultset projetosRS
+
+				// Da continuidade a iteração com o ResultSet
+				// projetosRS
+				projetosRS.moveNext();
+			}
 		}
 
 	}
-	
+
 	public void criarGrupoPadraoCopel(){
 		String nomeProjeto = "SSB - Self Service BI";
 		if ((nomeProjeto.charAt(3) + "").equals(" ")) {
-		    String siglaNomeProjeto = nomeProjeto.substring(0, 3);
-		
-		    // Caso o grupo não exista
-		    execute("CREATE USER GROUP \"" + siglaNomeProjeto + "\" DESCRIPTION \"Agrupa tipos diferentes de permissões de usuários para o projeto " + nomeProjeto + "\"  IN GROUP \"PROJ\";");
-		
-		    execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-ADM\" DESCRIPTION \"Agupa usuários principais, com permissão de adicionar usuários em grupos, para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
-		    execute("ALTER USER GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"USERADM\";");
-		
-		    execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-DSV\" DESCRIPTION \"Agupa desenvolvedores para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
-		    execute("GRANT SECURITY ROLE \"_Desenvolvedor\" TO GROUP \"" + siglaNomeProjeto + "-DSV\" FOR PROJECT \"" + nomeProjeto + "\";");
-		
-		    execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-MBL\" DESCRIPTION \"Agupa  usuários finais com permissão mobile para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
-		    execute("GRANT SECURITY ROLE \"_Mobile\" TO GROUP \"" + siglaNomeProjeto + "-MBL\" FOR PROJECT \"" + nomeProjeto + "\";");
-		
-		    execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-WEB\" DESCRIPTION \"Agupa  usuários finais com permissão web para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
-		    execute("GRANT SECURITY ROLE \"_Web\" TO GROUP \"" + siglaNomeProjeto + "-WEB\" FOR PROJECT \"" + nomeProjeto + "\";");
-		
-		    execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-SSBI\" DESCRIPTION \"Agupa  usuários finais com permissão Self Service BI para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
-		    execute("GRANT SECURITY ROLE \"_SelfServiceBi\" TO GROUP \"" + siglaNomeProjeto + "-WEB\" FOR PROJECT \"" + nomeProjeto + "\";");
-		
-		    // Recebe o resultado da consulta
-		    ResultSet aclGroupRS = executeCapture("LIST PROPERTIES FOR ACL FROM GROUP \"" + siglaNomeProjeto + "\";");
-		
-		    // Verifica se existe algum resultado
-		    if (aclGroupRS.getRowCount() > 0) {
-		
-		        // Anda pelo primeiro elemento do ResultSet
-		        // aclGroupRS
-		        aclGroupRS.moveFirst();
-		        while (!aclGroupRS.isEof()) {
-		
-		            // INÍCIO - Implementação sobre o resultset
-		            // aclGroupRS
-		            String groupName = aclGroupRS.getFieldValueString(TRUSTEE_NAME);
-		            execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "\" GROUP \"" + groupName + "\";");
-		            execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"" + groupName + "\";");
-		            execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"" + groupName + "\";");
-		            execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"" + groupName + "\";");
-		            execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"" + groupName + "\";");
-		            execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"" + groupName + "\";");
-		            // FIM - Implementação sobre o resultset
-		            // aclGroupRS
-		
-		            // Da continuidade a iteração com o ResultSet
-		            // aclGroupRS
-		            aclGroupRS.moveNext();
-		        }
-		
-		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "\" GROUP \"Administrator\";");
-		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"Administrator\";");
-		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"Administrator\";");
-		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"Administrator\";");
-		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"Administrator\";");
-		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"Administrator\";");
-		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "\" GROUP \"System Monitors\";");
-		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"System Monitors\";");
-		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"System Monitors\";");
-		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"System Monitors\";");
-		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"System Monitors\";");
-		        execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"System Monitors\";");
-		
-		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
-		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
-		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
-		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
-		
-		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
-		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
-		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
-		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
-		        execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
-		    }
-		}
+			String siglaNomeProjeto = nomeProjeto.substring(0, 3);
 
-        // FIM - Implementação sobre o resultset projetosRS
+			// Caso o grupo não exista
+			execute("CREATE USER GROUP \"" + siglaNomeProjeto + "\" DESCRIPTION \"Agrupa tipos diferentes de permissões de usuários para o projeto " + nomeProjeto + "\"  IN GROUP \"PROJ\";");
 
-        // Da continuidade a iteração com o ResultSet
-        // projetosRS
-	}
-	
-	public void listaPrivilegiosSecurityRole(){
-		
-		StringBuffer sbTokenList = new StringBuffer();
-		
-		String securityRoleName = "_Arquiteto";
-		
-		// Recebe o resultado da consulta
-		ResultSet categoriaSecurityRoleRS = (ResultSet) executeCapture("LIST PRIVILEGES FOR SECURITY ROLE \"" + securityRoleName + "\";");
+			execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-ADM\" DESCRIPTION \"Agupa usuários principais, com permissão de adicionar usuários em grupos, para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
+			execute("ALTER USER GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"USERADM\";");
 
-		// Verifica se existe algum resultado
-		if (categoriaSecurityRoleRS.getRowCount() > 0) {
+			execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-DSV\" DESCRIPTION \"Agupa desenvolvedores para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
+			execute("GRANT SECURITY ROLE \"_Desenvolvedor\" TO GROUP \"" + siglaNomeProjeto + "-DSV\" FOR PROJECT \"" + nomeProjeto + "\";");
 
-			// Anda pelo primeiro elemento do ResultSet categoriaSecurityRoleRS
-			categoriaSecurityRoleRS.moveFirst();
-			while (!categoriaSecurityRoleRS.isEof()) {
+			execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-MBL\" DESCRIPTION \"Agupa  usuários finais com permissão mobile para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
+			execute("GRANT SECURITY ROLE \"_Mobile\" TO GROUP \"" + siglaNomeProjeto + "-MBL\" FOR PROJECT \"" + nomeProjeto + "\";");
 
-				// Recebe o resultado da consulta
-				ResultSet privilegioCategoriaSecurityRoleRS = (ResultSet) categoriaSecurityRoleRS.getFieldValue(1);
-				privilegioCategoriaSecurityRoleRS.getRowCount();
+			execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-WEB\" DESCRIPTION \"Agupa  usuários finais com permissão web para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
+			execute("GRANT SECURITY ROLE \"_Web\" TO GROUP \"" + siglaNomeProjeto + "-WEB\" FOR PROJECT \"" + nomeProjeto + "\";");
 
-				// Verifica se existe algum resultado
-				if (privilegioCategoriaSecurityRoleRS.getRowCount() > 0) {
+			execute("CREATE USER GROUP \"" + siglaNomeProjeto + "-SSBI\" DESCRIPTION \"Agupa  usuários finais com permissão Self Service BI para o projeto " + nomeProjeto + "\" IN GROUP \"" + siglaNomeProjeto + "\";");
+			execute("GRANT SECURITY ROLE \"_SelfServiceBi\" TO GROUP \"" + siglaNomeProjeto + "-WEB\" FOR PROJECT \"" + nomeProjeto + "\";");
 
-					// Anda pelo primeiro elemento do ResultSet privilegioCategoriaSecurityRoleRS
-					privilegioCategoriaSecurityRoleRS.moveFirst();
-					while (!privilegioCategoriaSecurityRoleRS.isEof()) {
+			// Recebe o resultado da consulta
+			ResultSet aclGroupRS = executeCapture("LIST PROPERTIES FOR ACL FROM GROUP \"" + siglaNomeProjeto + "\";");
 
-						// INÍCIO - Implementação sobre o resultset privilegioCategoriaSecurityRoleRS
-						sbTokenList.append(";");
-						sbTokenList.append(privilegioCategoriaSecurityRoleRS.getFieldValueString(1));
-						
-						// FIM - Implementação sobre o resultset privilegioCategoriaSecurityRoleRS
+			// Verifica se existe algum resultado
+			if (aclGroupRS.getRowCount() > 0) {
 
-						// Da continuidade a iteração com o ResultSet
-						// privilegioCategoriaSecurityRoleRS
-						privilegioCategoriaSecurityRoleRS.moveNext();
-					}
+				// Anda pelo primeiro elemento do ResultSet
+				// aclGroupRS
+				aclGroupRS.moveFirst();
+				while (!aclGroupRS.isEof()) {
+
+					// INÍCIO - Implementação sobre o resultset
+					// aclGroupRS
+					String groupName = aclGroupRS.getFieldValueString(TRUSTEE_NAME);
+					execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "\" GROUP \"" + groupName + "\";");
+					execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"" + groupName + "\";");
+					execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"" + groupName + "\";");
+					execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"" + groupName + "\";");
+					execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"" + groupName + "\";");
+					execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"" + groupName + "\";");
+					// FIM - Implementação sobre o resultset
+					// aclGroupRS
+
+					// Da continuidade a iteração com o ResultSet
+					// aclGroupRS
+					aclGroupRS.moveNext();
 				}
-				
-				// FIM - Implementação sobre o resultset categoriaSecurityRoleRS
 
-				// Da continuidade a iteração com o ResultSet
-				// categoriaSecurityRoleRS
-				categoriaSecurityRoleRS.moveNext();
+				execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "\" GROUP \"Administrator\";");
+				execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"Administrator\";");
+				execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"Administrator\";");
+				execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"Administrator\";");
+				execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"Administrator\";");
+				execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"Administrator\";");
+				execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "\" GROUP \"System Monitors\";");
+				execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"System Monitors\";");
+				execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"System Monitors\";");
+				execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"System Monitors\";");
+				execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"System Monitors\";");
+				execute("REMOVE ACE FROM GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"System Monitors\";");
+
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
+
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
 			}
 		}
-		
-		String securityRoleTokens = sbTokenList.toString();
-		
-		String[] defaultTokens = new String[]{"WEBCHANGEUSEROPTIONS", "WEBCHANGEVIEWMODE", "WEBCONFIGURETOOLBARS", "WEBNORMALDRILLING", "WEBEXPORT", "WEBOBJECTSEARCH", "WEBPRINTMODE", "WEBREEXECUTEREPORTAGAINSTWH", "WEBSIMULTANEOUSEXEC", "WEBSORT", "WEBSCHEDULEREPORT", "WEBSWITCHPAGEBY", "WEBUSELOCKEDHEADERS", "WEBUSER", "WEBIMPORTDATA", "WEBIMPORTDATABASE", "WEBMODIFYGRIDLEVELINDOC", "WEBCREATEDERIVEDMETRICS", "WEBDEFINEDERIVEDELEMENTS", "WEBNUMBERFORMATTING", "WEBEXECUTECUBEREPORT", "WEBUSEREPORTOBJECTSWINDOW", "WEBUSEVIEWFILTEREDITOR", "WEBCREATEANALYSIS", "WEBVISUALINSIGHT", "WEBSAVEANALYSIS", "WEBCREATEALERT", "WEBEXECUTEBULKEXPORT", "WEBADDTOHISTORYLIST", "WEBADVANCEDDRILLING", "WEBALIASOBJECTS", "WEBCHOOSEATTRFORMDISPLAY", "WEBCREATENEWREPORT", "WEBDRILLONMETRICS", "WEBEDITNOTES", "WEBEXECDATAMARTREPORTS", "WEBFILTERSELECTIONS", "WEBMANAGEOBJECTS", "WEBMODIFYSUBTOTALS", "WEBPIVOTREPORT", "WEBREPORTDETAILS", "WEBREPORTSQL", "WEBSAVEREPORT", "WEBSAVESHAREDREPORT", "WEBSIMPLEGRAPHFORMATTING", "WEBUSEOBJECTSHARINGEDITOR", "WEBUSEBASICTHRESHOLDEDITOR", "WEBDEFINEVIEWREPORT", "WEBSAVEDERIVEDELEMENTS", "WEBCREATEHTMLCONTAINER", "WEBDOCDESIGN", "WEBMANAGEDOCDATASETS", "WEBCONFIGURETRANSACTION", "WEBDEFINEADVANCEDREPORTOPTIONS", "WEBDEFINEOLAPCUBEREP", "WEBEDITREPORTLINKS", "WEBFORMATGRIDANDGRAPH", "WEBMODIFYREPORTLIST", "WEBSAVETEMPLATEFILTER", "WEBSETCOLUMNWIDTHS", "SUBSCRIBEOTHERS", "WEBUSEADVANCEDTHRESHOLDEDITOR", "WEBUSECUSTOMGROUPEDITOR", "WEBUSEDESIGNMODE", "WEBUSEREPORTFILTEREDITOR", "WEBUSEMETRICEDITOR", "WEBUSEPROMPTEDITOR", "DRILLWITHINTELLIGENTCUBE", "USEDYNAMICSOURCING", "USEOLAPSERVICES", "WEBEXECUTEANALYSIS", "WEBEXECUTEDOCUMENT", "EXECUTETRANSACTION", "ADDNOTES", "CREATEAPPOBJECTS", "CREATENEWFOLDER", "CREATESCHEMAOBJECTS", "CREATESHORTCUT", "EDITNOTES", "EXPORTTOEXCEL", "EXPORTTOFLASH", "EXPORTTOHTML", "EXPORTTOPDF", "EXPORTTOTEXT", "SAVEPERSONALPROMPTANSWERS", "SCHEDULEREQUEST", "USESERVERCACHE", "USETRANSLATIONEDITOR", "USETRANSLATIONEDITORBYPASS", "WEBVIEWHISTORYLIST", "VIEWNOTES", "USEOFFICE", "MOBILEEDITANALYSIS", "MOBILEVIEWANALYSIS", "MOBILEVIEWDOCUMENT", "MOBILESAVEANALYSIS", "EMAILSCREENSHOTFROMDEVICE", "MOBILESAVEREPORT", "MOBILEPUBLISH", "PRINTFROMDEVICE", "USEMOBILE", "WEBCREATEDYNAMICADDRESSLIST", "WEBCREATEEMAILADDRESS", "WEBCREATEFILELOCATION", "WEBCREATEPRINTLOCATION", "WEBSUBSCRIPBEDYNAMICADDRESSLIST", "WEBSCHEDULEEMAIL", "WEBSCHEDULEDEXPORTTOFILE", "WEBSCHEDULEDPRINTING", "USEDISTRIBUTIONSERVICES", "SENDLINK", "USEIMMEDIATEDELIVERY", "USESENDPREVIEWNOW", "EXECUTEMULTISOURCEREPORT", "IMPORTTABLEFROMMULTIPLESOURCES", "CREATEDERIVEDMETRICS", "DEFINEDERIVEDELEMENTS", "USEREPORTOBJECTSWINDOW", "USEVIEWFILTEREDITOR", "EXECUTEDOCUMENT", "ALIASOBJECTS", "CHANGEUSERPREFERENCES", "CONFIGURETOOLBARS", "DRILLANDLINK", "MODIFYSUBTOTALS", "MODIFYSORTING", "PIVOTREPORT", "REEXECUTEREPORTAGAINSTWH", "SAVECUSTOMAUTOSTYLE", "SENDTOEMAIL", "SETATTRIBUTEDISPLAY", "USEDATAEXPLORER", "USEDESKTOP", "USEGRIDOPTIONS", "USEHISTORYLIST", "USEREPORTDATAOPTIONS", "USEREPORTEDITOR", "USESEARCHEDITOR", "USETHRESHOLDSEDITOR", "VIEWSQL", "DEFINEVIEWREPORT", "EXECUTECUBEREPORT", "SAVEDERIVEDELEMENTS", "USECUBEREPORTEDITOR", "CREATEHTMLCONTAINER", "USEDOCUMENTEDITOR", "USEBULKEXPORTEDITOR", "DEFINETRANSACTIONREPORT", "DEFINEOLAPCUBEREPORT", "DEFINEQUERYBUILDERREP", "FORMATGRAPH", "MODIFYREPORTOBJECTLIST", "USECONSOLIDATIONEDITOR", "USECUSTOMGROUPEDITOR", "USEDATAMARTEDITOR", "USEDESIGNMODE", "USEDRILLMAPEDITOR", "USEREPORTFILTEREDITOR", "USEFINDANDREPLACEDIALOG", "USEFORMATTINGEDITOR", "USEFREEFORMSQLEDITOR", "USEHTMLDOCUMENTEDITOR", "EDITREPORTLINKS", "USEMETRICEDITOR", "USEPROJECTDOCUMENTATION", "USEPROMPTEDITOR", "USESQLSTATEMENTSTAB", "USESUBTOTALSEDITOR", "USETEMPLATEEDITOR", "USEVLDBEDITOR", "VIEWETLINFO", "BYPASSSCHEMAACCESSCHECKS", "IMPORTFUNCTION", "IMPORTOLAPCUBE", "USEARCHITECTEDITORS", "USEOBJECTMANAGER", "USEOBJECTMANAGERREADONLY", "USETRANSLATIONTOOL", "USEINTEGRITYMANAGER", "ADMINISTERCACHES", "ADMINISTERCUBES", "ADMINISTERHISTORYLISTS", "ADMINISTERJOBS", "SCHEDULEADMIN", "ADMINISTERUSERCONNECTIONS", "USESECURITYFILTERMANAGER", "ASSIGNSECURITYROLES", "MONITORCHANGEJOURNAL", "ADMINBYPASSALLCHECKS", "CONFIGCACHES", "CONFIGAUDITING", "CONFIGCONNECTIONMAP", "CONFIGGOVERNING", "CONFIGLANGUAGE", "CONFIGPROJECTBASIC", "CONFIGPROJECTDATASOURCE", "CONFIGSECURITY", "CONFIGSTATS", "CONFIGSUBSCRIPTIONSETTINGS" , "DEFINESECURITYFILTER", "DUPLICATEPROJECT", "USEPROJECTSTATUSEDITOR", "IDLEPROJECT", "LOADPROJECTS", "USECACHEMONITOR", "USECUBEMONITOR", "HISTORYLISTMONITOR", "USEJOBMONITOR", "USEPROJECTMONITOR", "USESCHEDULEMONITOR", "USEUSERCONNMONITOR", "WEBADMIN"};
-		for (String verifiedToken : defaultTokens) {
-			if(securityRoleTokens.contains(verifiedToken)){
-				printOut("S");
-			} else {
-				printOut("N");
-			}
-		}
-		
+
+		// FIM - Implementação sobre o resultset projetosRS
+
+		// Da continuidade a iteração com o ResultSet
+		// projetosRS
 	}
-	
+
+	public void listaPrivilegiosSecurityRole(){
+		String[] arrSecurityRoleName = new String[]{"_arquitetoBW", "_arquitetoOracle", "_desenvolvedor", "_producao", "_usuarioMobile", "_usuarioSSBI", "_usuarioWeb"};
+		StringBuffer[] arrSbTokenList = new StringBuffer[arrSecurityRoleName.length];
+
+		for (int i = 0; i < arrSecurityRoleName.length; i++) {
+
+			arrSbTokenList[i] = new StringBuffer();
+
+			// Recebe o resultado da consulta
+			ResultSet categoriaSecurityRoleRS = (ResultSet) executeCapture("LIST PRIVILEGES FOR SECURITY ROLE \"" + arrSecurityRoleName[i] + "\";");
+
+			// Verifica se existe algum resultado
+			if (categoriaSecurityRoleRS.getRowCount() > 0) {
+
+				// Anda pelo primeiro elemento do ResultSet categoriaSecurityRoleRS
+				categoriaSecurityRoleRS.moveFirst();
+				while (!categoriaSecurityRoleRS.isEof()) {
+
+					// Recebe o resultado da consulta
+					ResultSet privilegioCategoriaSecurityRoleRS = (ResultSet) categoriaSecurityRoleRS.getFieldValue(1);
+					privilegioCategoriaSecurityRoleRS.getRowCount();
+
+					// Verifica se existe algum resultado
+					if (privilegioCategoriaSecurityRoleRS.getRowCount() > 0) {
+
+						// Anda pelo primeiro elemento do ResultSet privilegioCategoriaSecurityRoleRS
+						privilegioCategoriaSecurityRoleRS.moveFirst();
+						while (!privilegioCategoriaSecurityRoleRS.isEof()) {
+
+							// INÍCIO - Implementação sobre o resultset privilegioCategoriaSecurityRoleRS
+							arrSbTokenList[i].append(";");
+							arrSbTokenList[i].append(privilegioCategoriaSecurityRoleRS.getFieldValueString(1));
+							arrSbTokenList[i].append(";");
+
+							// FIM - Implementação sobre o resultset privilegioCategoriaSecurityRoleRS
+
+							// Da continuidade a iteração com o ResultSet
+							// privilegioCategoriaSecurityRoleRS
+							privilegioCategoriaSecurityRoleRS.moveNext();
+						}
+					}
+
+					// FIM - Implementação sobre o resultset categoriaSecurityRoleRS
+
+					// Da continuidade a iteração com o ResultSet
+					// categoriaSecurityRoleRS
+					categoriaSecurityRoleRS.moveNext();
+				}
+			}
+		}		
+
+		String[] defaultTokens = new String[]{"WEBCHANGEUSEROPTIONS", "WEBCHANGEVIEWMODE", "WEBCONFIGURETOOLBARS", "WEBNORMALDRILLING", "WEBEXPORT", "WEBOBJECTSEARCH", "WEBPRINTMODE", "WEBREEXECUTEREPORTAGAINSTWH", "WEBSIMULTANEOUSEXEC", "WEBSORT", "WEBSCHEDULEREPORT", "WEBSWITCHPAGEBY", "WEBUSELOCKEDHEADERS", "WEBUSER", "WEBIMPORTDATA", "WEBIMPORTDATABASE", "WEBMODIFYGRIDLEVELINDOC", "WEBCREATEDERIVEDMETRICS", "WEBDEFINEDERIVEDELEMENTS", "WEBNUMBERFORMATTING", "WEBEXECUTECUBEREPORT", "WEBUSEREPORTOBJECTSWINDOW", "WEBUSEVIEWFILTEREDITOR", "WEBCREATEANALYSIS", "WEBVISUALINSIGHT", "WEBSAVEANALYSIS", "WEBCREATEALERT", "WEBEXECUTEBULKEXPORT", "WEBADDTOHISTORYLIST", "WEBADVANCEDDRILLING", "WEBALIASOBJECTS", "WEBCHOOSEATTRFORMDISPLAY", "WEBCREATENEWREPORT", "WEBDRILLONMETRICS", "WEBEDITNOTES", "WEBEXECDATAMARTREPORTS", "WEBFILTERSELECTIONS", "WEBMANAGEOBJECTS", "WEBMODIFYSUBTOTALS", "WEBPIVOTREPORT", "WEBREPORTDETAILS", "WEBREPORTSQL", "WEBSAVEREPORT", "WEBSAVESHAREDREPORT", "WEBSIMPLEGRAPHFORMATTING", "WEBUSEOBJECTSHARINGEDITOR", "WEBUSEBASICTHRESHOLDEDITOR", "WEBDEFINEVIEWREPORT", "WEBSAVEDERIVEDELEMENTS", "WEBCREATEHTMLCONTAINER", "WEBDOCDESIGN", "WEBMANAGEDOCDATASETS", "WEBCONFIGURETRANSACTION", "WEBDEFINEADVANCEDREPORTOPTIONS", "WEBDEFINEOLAPCUBEREP", "WEBEDITREPORTLINKS", "WEBFORMATGRIDANDGRAPH", "WEBMODIFYREPORTLIST", "WEBSAVETEMPLATEFILTER", "WEBSETCOLUMNWIDTHS", "SUBSCRIBEOTHERS", "WEBUSEADVANCEDTHRESHOLDEDITOR", "WEBUSECUSTOMGROUPEDITOR", "WEBUSEDESIGNMODE", "WEBUSEREPORTFILTEREDITOR", "WEBUSEMETRICEDITOR", "WEBUSEPROMPTEDITOR", "DRILLWITHINTELLIGENTCUBE", "USEDYNAMICSOURCING", "USEOLAPSERVICES", "WEBEXECUTEANALYSIS", "WEBEXECUTEDOCUMENT", "EXECUTETRANSACTION", "ADDNOTES", "CREATEAPPOBJECTS", "CREATENEWFOLDER", "CREATESCHEMAOBJECTS", "CREATESHORTCUT", "EDITNOTES", "EXPORTTOEXCEL", "EXPORTTOFLASH", "EXPORTTOHTML", "EXPORTTOPDF", "EXPORTTOTEXT", "SAVEPERSONALPROMPTANSWERS", "SCHEDULEREQUEST", "USESERVERCACHE", "USETRANSLATIONEDITOR", "USETRANSLATIONEDITORBYPASS", "WEBVIEWHISTORYLIST", "VIEWNOTES", "USEOFFICE", "MOBILEEDITANALYSIS", "MOBILEVIEWANALYSIS", "MOBILEVIEWDOCUMENT", "MOBILESAVEANALYSIS", "EMAILSCREENSHOTFROMDEVICE", "MOBILESAVEREPORT", "MOBILEPUBLISH", "PRINTFROMDEVICE", "USEMOBILE", "WEBCREATEDYNAMICADDRESSLIST", "WEBCREATEEMAILADDRESS", "WEBCREATEFILELOCATION", "WEBCREATEPRINTLOCATION", "WEBSUBSCRIPBEDYNAMICADDRESSLIST", "WEBSCHEDULEEMAIL", "WEBSCHEDULEDEXPORTTOFILE", "WEBSCHEDULEDPRINTING", "USEDISTRIBUTIONSERVICES", "SENDLINK", "USEIMMEDIATEDELIVERY", "USESENDPREVIEWNOW", "EXECUTEMULTISOURCEREPORT", "IMPORTTABLEFROMMULTIPLESOURCES", "CREATEDERIVEDMETRICS", "DEFINEDERIVEDELEMENTS", "USEREPORTOBJECTSWINDOW", "USEVIEWFILTEREDITOR", "EXECUTEDOCUMENT", "ALIASOBJECTS", "CHANGEUSERPREFERENCES", "CONFIGURETOOLBARS", "DRILLANDLINK", "MODIFYSUBTOTALS", "MODIFYSORTING", "PIVOTREPORT", "REEXECUTEREPORTAGAINSTWH", "SAVECUSTOMAUTOSTYLE", "SENDTOEMAIL", "SETATTRIBUTEDISPLAY", "USEDATAEXPLORER", "USEDESKTOP", "USEGRIDOPTIONS", "USEHISTORYLIST", "USEREPORTDATAOPTIONS", "USEREPORTEDITOR", "USESEARCHEDITOR", "USETHRESHOLDSEDITOR", "VIEWSQL", "DEFINEVIEWREPORT", "EXECUTECUBEREPORT", "SAVEDERIVEDELEMENTS", "USECUBEREPORTEDITOR", "CREATEHTMLCONTAINER", "USEHTMLDOCUMENTEDITOR", "USEBULKEXPORTEDITOR", "DEFINETRANSACTIONREPORT", "DEFINEOLAPCUBEREPORT", "DEFINEQUERYBUILDERREP", "FORMATGRAPH", "MODIFYREPORTOBJECTLIST", "USECONSOLIDATIONEDITOR", "USECUSTOMGROUPEDITOR", "USEDATAMARTEDITOR", "USEDESIGNMODE", "USEDRILLMAPEDITOR", "USEREPORTFILTEREDITOR", "USEFINDANDREPLACEDIALOG", "USEFORMATTINGEDITOR", "USEFREEFORMSQLEDITOR", "USEHTMLDOCUMENTEDITOR", "EDITREPORTLINKS", "USEMETRICEDITOR", "USEPROJECTDOCUMENTATION", "USEPROMPTEDITOR", "USESQLSTATEMENTSTAB", "USESUBTOTALSEDITOR", "USETEMPLATEEDITOR", "USEVLDBEDITOR", "VIEWETLINFO", "BYPASSSCHEMAACCESSCHECKS", "IMPORTFUNCTION", "IMPORTOLAPCUBE", "USEARCHITECTEDITORS", "USEOBJECTMANAGER", "USEOBJECTMANAGERREADONLY", "USETRANSLATIONTOOL", "USEINTEGRITYMANAGER", "ADMINISTERCACHES", "ADMINISTERCUBES", "ADMINISTERHISTORYLISTS", "ADMINISTERJOBS", "SCHEDULEADMIN", "ADMINISTERUSERCONNECTIONS", "USESECURITYFILTERMANAGER", "ASSIGNSECURITYROLES", "MONITORCHANGEJOURNAL", "ADMINBYPASSALLCHECKS", "CONFIGCACHES", "CONFIGAUDITING", "CONFIGCONNECTIONMAP", "CONFIGGOVERNING", "CONFIGLANGUAGE", "CONFIGPROJECTBASIC", "CONFIGPROJECTDATASOURCE", "CONFIGSECURITY", "CONFIGSTATS", "CONFIGSUBSCRIPTIONSETTINGS" , "DEFINESECURITYFILTER", "DUPLICATEPROJECT", "USEPROJECTSTATUSEDITOR", "IDLEPROJECT", "LOADPROJECTS", "USECACHEMONITOR", "USECUBEMONITOR", "HISTORYLISTMONITOR", "USEJOBMONITOR", "USEPROJECTMONITOR", "USESCHEDULEMONITOR", "USEUSERCONNMONITOR", "WEBADMIN"};
+
+		boolean removeme = true;
+
+		for (String verifiedToken : defaultTokens) {
+			String output = "";
+			for (int i = 0; i < arrSbTokenList.length; i++) {
+
+				if(removeme){
+					//printOut(arrSecurityRoleName[i] + "=" + arrSbTokenList[i]);
+				}
+
+				if(arrSbTokenList[i].toString().contains(";"+verifiedToken+";")){
+					output += "S;;";
+				} else {
+					output += "N;;";
+				}
+			}
+			removeme = false;
+			printOut(output);
+		}
+
+	}
+
 }
