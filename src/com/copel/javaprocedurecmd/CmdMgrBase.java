@@ -10,6 +10,9 @@ public class CmdMgrBase {
 	public static final String IS_GROUP = null;
 	public static final String LOGIN = null;
 	public static final String NAME = null;
+	public static final String PATH = null;
+	public static final String ID = null;
+	public static final String ADDRESSES = null;
 
 	
 	public ResultSet executeCapture(String string) {

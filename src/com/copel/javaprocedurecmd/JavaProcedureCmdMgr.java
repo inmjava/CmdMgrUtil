@@ -15,9 +15,6 @@ import com.copel.cmdutil.ResultSet;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class JavaProcedureCmdMgr extends CmdMgrBase {
 
-	private static final String PATH = null;
-	private static final String ID = null;
-
 	public void addAddreessMultipleUsers(String sUserGroup, String sWebAddress) {
 
 		// get all users in the group
@@ -1096,6 +1093,71 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 			printOut(output);
 		}
 
+	}
+	
+	public void listaEveryonePhysicalAddress(){
+		// Recebe o resultado da consulta
+		ResultSet membrosEveryonRS = executeCapture("LIST MEMBERS FOR USER GROUP \"Everyone\";");
+		membrosEveryonRS.moveFirst();
+		membrosEveryonRS = (ResultSet) membrosEveryonRS.getFieldValue(MEMBER_RESULTSET);
+		membrosEveryonRS.getRowCount();
+		
+		// Verifica se existe algum resultado
+		if (membrosEveryonRS.getRowCount() > 0) {
+		
+			// Anda pelo primeiro elemento do ResultSet membrosEveryonRS
+			membrosEveryonRS.moveFirst();
+			while (!membrosEveryonRS.isEof()) {
+		
+				// INÍCIO - Implementação sobre o resultset membrosEveryonRS
+				String login = membrosEveryonRS.getFieldValueString(LOGIN);
+				// Recebe o resultado da consulta
+				ResultSet userPropertiesRS = (ResultSet) executeCapture("LIST PROPERTIES FOR USER \"" + login + "\";");
+		
+				// Verifica se existe algum resultado
+				if (userPropertiesRS.getRowCount() > 0) {
+		
+					// Anda pelo primeiro elemento do ResultSet userPropertiesRS
+					userPropertiesRS.moveFirst();
+					while (!userPropertiesRS.isEof()) {
+		
+						// INÍCIO - Implementação sobre o resultset userPropertiesRS
+						ResultSet physicalAddressRS = (ResultSet) userPropertiesRS.getFieldValue(18);
+						physicalAddressRS.getRowCount();
+		
+						// Verifica se existe algum resultado
+						if (physicalAddressRS.getRowCount() > 0) {
+		
+							// Anda pelo primeiro elemento do ResultSet physicalAddressRS
+							physicalAddressRS.moveFirst();
+							while (!physicalAddressRS.isEof()) {
+		
+								// INÍCIO - Implementação sobre o resultset physicalAddressRS
+								printOut(physicalAddressRS.getFieldValueString(1));
+								// FIM - Implementação sobre o resultset physicalAddressRS
+		
+								// Da continuidade a iteração com o ResultSet
+								// physicalAddressRS
+								physicalAddressRS.moveNext();
+							}
+						}
+						
+						// FIM - Implementação sobre o resultset userPropertiesRS
+		
+						// Da continuidade a iteração com o ResultSet
+						// userPropertiesRS
+						userPropertiesRS.moveNext();
+					}
+				}
+				
+				// FIM - Implementação sobre o resultset membrosEveryonRS
+		
+				// Da continuidade a iteração com o ResultSet
+				// membrosEveryonRS
+				membrosEveryonRS.moveNext();
+			}
+		}
+		
 	}
 
 }
