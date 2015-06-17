@@ -1007,11 +1007,11 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
 				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
 
-				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
-				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
-				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
-				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
-				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"" + siglaNomeProjeto + "-DSV\" ACCESSRIGHTS VIEW;");
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "\" GROUP \"DESENV\" ACCESSRIGHTS VIEW;");
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"DESENV\" ACCESSRIGHTS VIEW;");
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"DESENV\" ACCESSRIGHTS VIEW;");
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-SSBI\" GROUP \"DESENV\" ACCESSRIGHTS VIEW;");
+				execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"DESENV\" ACCESSRIGHTS VIEW;");
 			}
 		}
 
@@ -1176,7 +1176,7 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 			while (!projMembersRS.isEof()) {
 		
 				// INÍCIO - Implementação sobre o resultset projMembersRS
-				printOut(projMembersRS.getFieldValueString(NAME));
+				printOut(projMembersRS.getFieldValueString(LOGIN));
 				// FIM - Implementação sobre o resultset projMembersRS
 		
 				// Da continuidade a iteração com o ResultSet
