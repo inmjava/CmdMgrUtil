@@ -139,6 +139,7 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 			execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-ADM\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
 			execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-DSV\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
 			execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
+			execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-WEB\" GROUP \"DESENV\" ACCESSRIGHTS MODIFY;");
 			execute("ADD ACE FOR GROUP \"" + siglaNomeProjeto + "-MBL\" GROUP \"" + siglaNomeProjeto + "-ADM\" ACCESSRIGHTS MODIFY;");
 		}
 
@@ -1158,6 +1159,31 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 			}
 		}
 		
+	}
+	
+	public void listProjectMembers(){
+		// Recebe o resultado da consulta
+		ResultSet projMembersRS = executeCapture("LIST MEMBERS FOR USER GROUP \"PROJ\";");
+		projMembersRS.moveFirst();
+		projMembersRS = (ResultSet) projMembersRS.getFieldValue(MEMBER_RESULTSET);
+		projMembersRS.getRowCount();
+		
+		// Verifica se existe algum resultado
+		if (projMembersRS.getRowCount() > 0) {
+		
+			// Anda pelo primeiro elemento do ResultSet projMembersRS
+			projMembersRS.moveFirst();
+			while (!projMembersRS.isEof()) {
+		
+				// INÍCIO - Implementação sobre o resultset projMembersRS
+				printOut(projMembersRS.getFieldValueString(NAME));
+				// FIM - Implementação sobre o resultset projMembersRS
+		
+				// Da continuidade a iteração com o ResultSet
+				// projMembersRS
+				projMembersRS.moveNext();
+			}
+		}
 	}
 
 }
