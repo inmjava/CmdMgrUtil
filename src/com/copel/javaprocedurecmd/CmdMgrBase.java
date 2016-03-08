@@ -13,6 +13,8 @@ public class CmdMgrBase {
 	public static final String PATH = null;
 	public static final String ID = null;
 	public static final String ADDRESSES = null;
+	public static final String GOVERNING = null;
+	public static final String MAXNOREPORTRESULTROWS = null;
 
 	
 	public ResultSet executeCapture(String string) {

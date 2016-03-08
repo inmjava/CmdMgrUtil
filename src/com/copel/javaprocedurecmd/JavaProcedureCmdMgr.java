@@ -1185,5 +1185,110 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 			}
 		}
 	}
+	
+	public void getMaxResultRows(){
+		// Recebe o resultado da consulta
+		ResultSet projectsRS = (ResultSet) executeCapture("LIST ALL PROJECTS;");
+		
+		// Verifica se existe algum resultado
+		if (projectsRS.getRowCount() > 0) {
+		
+			// Anda pelo primeiro elemento do ResultSet projectsRS
+			projectsRS.moveFirst();
+			while (!projectsRS.isEof()) {
+		
+				// INÍCIO - Implementação sobre o resultset projectsRS
+				try{
+					
+					String nomeProjeto = projectsRS.getFieldValueString(NAME);
+					
+					// Recebe o resultado da consulta
+					ResultSet maxRS = executeCapture("LIST PROPERTIES FOR PROJECT CONFIGURATION IN PROJECT \""+ nomeProjeto +"\";");
+					maxRS.moveFirst();
+					maxRS = (ResultSet) maxRS.getFieldValue(13);
+					maxRS.getRowCount();
+		
+					// Verifica se existe algum resultado
+					if (maxRS.getRowCount() > 0) {
+		
+						// Anda pelo primeiro elemento do ResultSet maxRS
+						maxRS.moveFirst();
+						while (!maxRS.isEof()) {
+		
+							// INÍCIO - Implementação sobre o resultset maxRS
+							String att = nomeProjeto + "= ";
+							for (int i = 0; i < 25; i++) {
+								att += "" + maxRS.getFieldValueString(i) + ", ";
+							}
+							printOut(att);
+							// FIM - Implementação sobre o resultset maxRS
+		
+							// Da continuidade a iteração com o ResultSet
+							// maxRS
+							maxRS.moveNext();
+						}
+					}
+					
+				}catch(Exception e){}
+				
+				// FIM - Implementação sobre o resultset projectsRS
+		
+				// Da continuidade a iteração com o ResultSet
+				// projectsRS
+				projectsRS.moveNext();
+			}
+		}
+	}
+	
+	public void getMaxNumber2(){
+		// Recebe o resultado da consulta
+		ResultSet maxRS = (ResultSet) executeCapture("LIST PROPERTIES FOR PROJECT CONFIGURATION IN PROJECT \"AIN - Analise de Interrupcoes\";");
+
+		// Verifica se existe algum resultado
+		if (maxRS.getRowCount() > 0) {
+
+			// Anda pelo primeiro elemento do ResultSet maxRS
+			maxRS.moveFirst();
+			while (!maxRS.isEof()) {
+
+				// INÍCIO - Implementação sobre o resultset maxRS
+				printOut(maxRS.getFieldValueString(MAXNOREPORTRESULTROWS));
+				// FIM - Implementação sobre o resultset maxRS
+
+				// Da continuidade a iteração com o ResultSet
+				// maxRS
+				maxRS.moveNext();
+			}
+		}
+	}
+	
+	public void getMaxNumber3(){
+		// Recebe o resultado da consulta
+		ResultSet maxRS = executeCapture("LIST PROPERTIES FOR PROJECT CONFIGURATION IN PROJECT \"AIN - Analise de Interrupcoes\";");
+		maxRS.moveFirst();
+		maxRS = (ResultSet) maxRS.getFieldValue(13);
+		maxRS.getRowCount();
+
+		// Verifica se existe algum resultado
+		if (maxRS.getRowCount() > 0) {
+
+			// Anda pelo primeiro elemento do ResultSet maxRS
+			maxRS.moveFirst();
+			while (!maxRS.isEof()) {
+
+				// INÍCIO - Implementação sobre o resultset maxRS
+				String att = "";
+				for (int i = 0; i < 25; i++) {
+					att += "" + maxRS.getFieldValueString(i) + ", ";
+				}
+				printOut(att);
+				// FIM - Implementação sobre o resultset maxRS
+
+				// Da continuidade a iteração com o ResultSet
+				// maxRS
+				maxRS.moveNext();
+			}
+		}
+	}
 
 }
