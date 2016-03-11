@@ -1186,7 +1186,7 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 		}
 	}
 	
-	public void getMaxResultRows(){
+	public void gerarQueryCommandManagerAlterarConfiguracaoProjeto(){
 		// Recebe o resultado da consulta
 		ResultSet projectsRS = (ResultSet) executeCapture("LIST ALL PROJECTS;");
 		
@@ -1200,29 +1200,52 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 				// INÍCIO - Implementação sobre o resultset projectsRS
 				try{
 					
-					String nomeProjeto = projectsRS.getFieldValueString(NAME);
-					
 					// Recebe o resultado da consulta
-					ResultSet maxRS = executeCapture("LIST PROPERTIES FOR PROJECT CONFIGURATION IN PROJECT \""+ nomeProjeto +"\";");
+					String nomeProjeto = projectsRS.getFieldValueString(NAME);
+					ResultSet maxRS = executeCapture("LIST PROPERTIES FOR PROJECT CONFIGURATION IN PROJECT \"" + nomeProjeto + "\";");
 					maxRS.moveFirst();
-					maxRS = (ResultSet) maxRS.getFieldValue(13);
+					maxRS = (ResultSet) maxRS.getFieldValue(GOVERNING_RESULT_SET);
 					maxRS.getRowCount();
-		
 					// Verifica se existe algum resultado
 					if (maxRS.getRowCount() > 0) {
-		
+
 						// Anda pelo primeiro elemento do ResultSet maxRS
 						maxRS.moveFirst();
 						while (!maxRS.isEof()) {
-		
+
 							// INÍCIO - Implementação sobre o resultset maxRS
-							String att = nomeProjeto + "= ";
-							for (int i = 0; i < 25; i++) {
-								att += "" + maxRS.getFieldValueString(i) + ", ";
-							}
-							printOut(att);
+							String consulta = "";
+							
+							consulta += "ALTER PROJECT CONFIGURATION";
+							consulta += "INTERACTIVEJOBPERPROJECT " + maxRS.getFieldValueString(INTERACTIVEJOBPERPROJECT) + " ";
+							consulta += "MAXCACHEUPDATESUBSCRIPTIONS " + maxRS.getFieldValueString(MAXCACHEUPDATESUBSCRIPTIONS) + " ";
+							consulta += "MAXEMAILSUBSCRIPTIONS " + maxRS.getFieldValueString(MAXEMAILSUBSCRIPTIONS) + " ";
+							consulta += "MAXEXECJOBSUSER " + maxRS.getFieldValueString(MAXEXECJOBSUSER) + " ";
+							consulta += "MAXFILESUBSCRIPTIONS " + maxRS.getFieldValueString(MAXFILESUBSCRIPTIONS) + " ";
+							consulta += "MAXHISTLISTSUBSCRIPTIONS " + maxRS.getFieldValueString(MAXHISTLISTSUBSCRIPTIONS) + " ";
+							consulta += "MAXJOBSPROJECT " + maxRS.getFieldValueString(MAXJOBSPROJECT) + " ";
+							consulta += "MAXJOBSUSERACCT " + maxRS.getFieldValueString(MAXJOBSUSERACCT) + " ";
+							consulta += "MAXJOBSUSERSESSION " + maxRS.getFieldValueString(MAXJOBSUSERSESSION) + " ";
+							consulta += "MAXMOBILESUBSCRIPTIONS " + maxRS.getFieldValueString(MAXMOBILESUBSCRIPTIONS) + " ";
+							consulta += "MAXNOELEMROWS " + maxRS.getFieldValueString(MAXNOELEMROWS) + " ";
+							consulta += "MAXNOINTRESULTROWS " + maxRS.getFieldValueString(MAXNOINTRESULTROWS) + " ";
+							consulta += "MAXNOREPORTRESULTROWS " + maxRS.getFieldValueString(MAXNOREPORTRESULTROWS) + " ";
+							consulta += "MAXPRINTSUBSCRIPTIONS " + maxRS.getFieldValueString(MAXPRINTSUBSCRIPTIONS) + " ";
+							consulta += "MAXREPORTEXECTIME " + maxRS.getFieldValueString(MAXREPORTEXECTIME) + " ";
+							consulta += "MAXSCHEDULEREPORTEXECTIME " + maxRS.getFieldValueString(MAXSCHEDULEREPORTEXECTIME) + " ";
+							consulta += "MAXUSERSESSIONSPROJECT " + maxRS.getFieldValueString(MAXUSERSESSIONSPROJECT) + " ";
+							consulta += "MAXFILESIZEIMPORT " + maxRS.getFieldValueString(MAX_FILE_SIZE_IMPORT) + " ";
+							consulta += "MAXINTERACTIVESESSIONSPERUSER " + maxRS.getFieldValueString(MAX_INTERACTIVE_SESSIONS_PER_USER) + " ";
+							consulta += "MAXNODATAMARTRESULTROWS " + maxRS.getFieldValueString(MAX_NO_DATA_MART_RESULTS_ROW) + " ";
+							consulta += "MAXQUOTAIMPORT " + maxRS.getFieldValueString(MAX_QUOTA_IMPORT) + " ";
+							consulta += "SQLGENERATIONMEMORY " + maxRS.getFieldValueString(SQLGENERATIONMEMORY) + " ";
+							consulta += "WAITTIMEFORPROMPTANSWERS " + maxRS.getFieldValueString(WAITTIMEFORPROMPTANSWERS) + " ";
+							consulta += "WAREHOUSEEXECUTIONTIME " + maxRS.getFieldValueString(WAREHOUSEEXECUTIONTIME) + " ";
+							consulta += "IN PROJECT \"" + nomeProjeto + "\";";
+							
+							printOut(consulta);
 							// FIM - Implementação sobre o resultset maxRS
-		
+
 							// Da continuidade a iteração com o ResultSet
 							// maxRS
 							maxRS.moveNext();
@@ -1264,11 +1287,11 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 	
 	public void getMaxNumber3(){
 		// Recebe o resultado da consulta
-		ResultSet maxRS = executeCapture("LIST PROPERTIES FOR PROJECT CONFIGURATION IN PROJECT \"AIN - Analise de Interrupcoes\";");
+		String nomeProjeto = "AIN - Analise de Interrupcoes";
+		ResultSet maxRS = executeCapture("LIST PROPERTIES FOR PROJECT CONFIGURATION IN PROJECT \"" + nomeProjeto + "\";");
 		maxRS.moveFirst();
-		maxRS = (ResultSet) maxRS.getFieldValue(13);
+		maxRS = (ResultSet) maxRS.getFieldValue(GOVERNING_RESULT_SET);
 		maxRS.getRowCount();
-
 		// Verifica se existe algum resultado
 		if (maxRS.getRowCount() > 0) {
 
@@ -1277,11 +1300,36 @@ public class JavaProcedureCmdMgr extends CmdMgrBase {
 			while (!maxRS.isEof()) {
 
 				// INÍCIO - Implementação sobre o resultset maxRS
-				String att = "";
-				for (int i = 0; i < 25; i++) {
-					att += "" + maxRS.getFieldValueString(i) + ", ";
-				}
-				printOut(att);
+				String consulta = "";
+				
+				consulta += "ALTER PROJECT CONFIGURATION";
+				consulta += "INTERACTIVEJOBPERPROJECT " + maxRS.getFieldValueString(INTERACTIVEJOBPERPROJECT) + " ";
+				consulta += "MAXCACHEUPDATESUBSCRIPTIONS " + maxRS.getFieldValueString(MAXCACHEUPDATESUBSCRIPTIONS) + " ";
+				consulta += "MAXEMAILSUBSCRIPTIONS " + maxRS.getFieldValueString(MAXEMAILSUBSCRIPTIONS) + " ";
+				consulta += "MAXEXECJOBSUSER " + maxRS.getFieldValueString(MAXEXECJOBSUSER) + " ";
+				consulta += "MAXFILESUBSCRIPTIONS " + maxRS.getFieldValueString(MAXFILESUBSCRIPTIONS) + " ";
+				consulta += "MAXHISTLISTSUBSCRIPTIONS " + maxRS.getFieldValueString(MAXHISTLISTSUBSCRIPTIONS) + " ";
+				consulta += "MAXJOBSPROJECT " + maxRS.getFieldValueString(MAXJOBSPROJECT) + " ";
+				consulta += "MAXJOBSUSERACCT " + maxRS.getFieldValueString(MAXJOBSUSERACCT) + " ";
+				consulta += "MAXJOBSUSERSESSION " + maxRS.getFieldValueString(MAXJOBSUSERSESSION) + " ";
+				consulta += "MAXMOBILESUBSCRIPTIONS " + maxRS.getFieldValueString(MAXMOBILESUBSCRIPTIONS) + " ";
+				consulta += "MAXNOELEMROWS " + maxRS.getFieldValueString(MAXNOELEMROWS) + " ";
+				consulta += "MAXNOINTRESULTROWS " + maxRS.getFieldValueString(MAXNOINTRESULTROWS) + " ";
+				consulta += "MAXNOREPORTRESULTROWS " + maxRS.getFieldValueString(MAXNOREPORTRESULTROWS) + " ";
+				consulta += "MAXPRINTSUBSCRIPTIONS " + maxRS.getFieldValueString(MAXPRINTSUBSCRIPTIONS) + " ";
+				consulta += "MAXREPORTEXECTIME " + maxRS.getFieldValueString(MAXREPORTEXECTIME) + " ";
+				consulta += "MAXSCHEDULEREPORTEXECTIME " + maxRS.getFieldValueString(MAXSCHEDULEREPORTEXECTIME) + " ";
+				consulta += "MAXUSERSESSIONSPROJECT " + maxRS.getFieldValueString(MAXUSERSESSIONSPROJECT) + " ";
+				consulta += "MAXFILESIZEIMPORT " + maxRS.getFieldValueString(MAX_FILE_SIZE_IMPORT) + " ";
+				consulta += "MAXINTERACTIVESESSIONSPERUSER " + maxRS.getFieldValueString(MAX_INTERACTIVE_SESSIONS_PER_USER) + " ";
+				consulta += "MAXNODATAMARTRESULTROWS " + maxRS.getFieldValueString(MAX_NO_DATA_MART_RESULTS_ROW) + " ";
+				consulta += "MAXQUOTAIMPORT " + maxRS.getFieldValueString(MAX_QUOTA_IMPORT) + " ";
+				consulta += "SQLGENERATIONMEMORY " + maxRS.getFieldValueString(SQLGENERATIONMEMORY) + " ";
+				consulta += "WAITTIMEFORPROMPTANSWERS " + maxRS.getFieldValueString(WAITTIMEFORPROMPTANSWERS) + " ";
+				consulta += "WAREHOUSEEXECUTIONTIME " + maxRS.getFieldValueString(WAREHOUSEEXECUTIONTIME) + " ";
+				consulta += "IN PROJECT \"" + nomeProjeto + "\";";
+				
+				printOut(consulta);
 				// FIM - Implementação sobre o resultset maxRS
 
 				// Da continuidade a iteração com o ResultSet
